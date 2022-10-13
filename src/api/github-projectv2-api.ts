@@ -6,7 +6,7 @@ import { setContext } from '@apollo/client/link/context';
 // Apollo Client (Auth using bearer token): https://www.apollographql.com/docs/react/networking/authentication/
 // GitHub API Portal: https://studio.apollographql.com/public/github/home?variant=current&utm_campaign=github-api-article&utm_medium=display&utm_source=apollo-blog
 
-const GITHUB_API_URL = 'https://api.github.com/graphql';
+export const GITHUB_API_URL = 'https://api.github.com/graphql';
 
 export const createGQLClient = (token: string) => {
   const httpLink = createHttpLink({

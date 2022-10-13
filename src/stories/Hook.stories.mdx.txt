@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs';
 
-<Meta title="Hooks/useExample" />
+<Meta title="API Wrapper/github-projectv2-api" />
 
 <h1>useExample</h1>
 

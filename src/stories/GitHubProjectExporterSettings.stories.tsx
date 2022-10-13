@@ -7,21 +7,19 @@
 import React from 'react';
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 
-import { Example } from '../components/Example';
+import { GitHubExporterSettings } from '../components/GitHubProjectExporterSettings';
 
 export default {
-  title: 'Components/Example',
-  component: Example,
-} as ComponentMeta<typeof Example>;
+  title: 'Tools/GitHub Project Exporter',
+  component: GitHubExporterSettings,
+  parameters: {
+    controls: {
+      disable: true,
+    },
+  },
+} as ComponentMeta<typeof GitHubExporterSettings>;
 
-const Template: ComponentStory<typeof Example> = (args) => <Example {...args} />;
+const Template: ComponentStory<typeof GitHubExporterSettings> = (args) => <GitHubExporterSettings {...args} />;
 
-export const Hello = Template.bind({});
-Hello.args = {
-  label: 'Hello',
-};
-
-export const World = Template.bind({});
-World.args = {
-  label: 'World',
-};
+export const Settings = Template.bind({});
+Settings.args = {};

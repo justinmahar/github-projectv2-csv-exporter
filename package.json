@@ -1,9 +1,9 @@
 {
-  "name": "react-kindling",
-  "version": "2.2.0",
+  "name": "github-projectv2-csv-exporter",
+  "version": "1.0.0",
   "author": "Justin Mahar <contact@justinmahar.com>",
-  "description": "A template to build, test, and share React components and hooks easily.",
-  "homepage": "https://justinmahar.github.io/react-kindling/",
+  "description": "Export an organization's GitHub projects (ProjectV2) as CSV files.",
+  "homepage": "https://justinmahar.github.io/github-projectv2-csv-exporter/",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
@@ -23,10 +23,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/justinmahar/react-kindling.git"
+    "url": "git+https://github.com/justinmahar/github-projectv2-csv-exporter.git"
   },
   "bugs": {
-    "url": "https://github.com/justinmahar/react-kindling/issues"
+    "url": "https://github.com/justinmahar/github-projectv2-csv-exporter/issues"
   },
   "keywords": [],
   "peerDependencies": {
@@ -56,5 +56,13 @@
     "react-html-props": "^1.0.32",
     "react-markdown": "^8.0.0",
     "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.7.0",
+    "bootstrap": "^5.2.2",
+    "emoji-regex": "^10.2.1",
+    "export-to-csv": "^0.2.1",
+    "graphql": "^16.6.0",
+    "react-bootstrap": "^2.5.0"
   }
 }

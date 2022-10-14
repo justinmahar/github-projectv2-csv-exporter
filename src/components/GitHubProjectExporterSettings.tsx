@@ -267,7 +267,16 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                             Add Status
                           </Button>
                         </div>
-                        <div className="d-flex flex-wrap gap-2">{knownColumnsElements}</div>
+                        <div className="d-flex flex-wrap gap-2 mb-2">{knownColumnsElements}</div>
+                        <div>
+                          <Form.Control
+                            type="text"
+                            value={knownColumnsText ?? ''}
+                            placeholder={knownColumnsText ? '' : 'Add a status above'}
+                            onChange={(e) => setKnownColumnsText(e.target.value)}
+                            style={{ width: 220 }}
+                          />
+                        </div>
                       </Accordion.Body>
                     </Accordion.Item>
                   </Accordion>

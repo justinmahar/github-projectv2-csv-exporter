@@ -29,16 +29,16 @@ export const createGQLClient = (token: string) => {
   return client;
 };
 
-export const fetchOrgProjects = async (orgName: string, token: string): Promise<OrgProjects> => {
+export const fetchProjects = async (login: string, isOrg: boolean, token: string): Promise<Projects> => {
   const ORG_PROJECTS_QUERY = gql`
-    query ProjectsQuery($orgName: String!, $projectsFirst: Int) {
+    query ProjectsQuery($login: String!, $projectsFirst: Int) {
       viewer {
         login
         name
         url
         avatarUrl
       }
-      organization(login: $orgName) {
+      entity: ${isOrg ? 'organization' : 'user'}(login: $login) {
         avatarUrl
         login
         name
@@ -62,14 +62,14 @@ export const fetchOrgProjects = async (orgName: string, token: string): Promise<
   const results = await client.query({
     query: ORG_PROJECTS_QUERY,
     variables: {
-      orgName,
+      login,
       projectsFirst: 100,
     },
   });
-  return new OrgProjects(results);
+  return new Projects(results);
 };
 
-export class OrgProjects {
+export class Projects {
   public results: any;
   constructor(results: any) {
     this.results = results;
@@ -86,20 +86,20 @@ export class OrgProjects {
   public getViewerName(): string | undefined {
     return this.results?.data?.viewer?.name;
   }
-  public getOrganizationLogin(): string | undefined {
-    return this.results?.data?.organization?.login;
+  public getLogin(): string | undefined {
+    return this.results?.data?.entity?.login;
   }
-  public getOrganizationAvatarUrl(): string | undefined {
-    return this.results?.data?.organization?.avatarUrl;
+  public getAvatarUrl(): string | undefined {
+    return this.results?.data?.entity?.avatarUrl;
   }
-  public getOrganizationUrl(): string | undefined {
-    return this.results?.data?.organization?.url;
+  public getUrl(): string | undefined {
+    return this.results?.data?.entity?.url;
   }
-  public getOrganizationName(): string | undefined {
-    return this.results?.data?.organization?.name;
+  public getName(): string | undefined {
+    return this.results?.data?.entity?.name;
   }
   public getProjects(): Project[] {
-    const edges: any[] = this.results?.data?.organization?.projectsV2?.edges ?? [];
+    const edges: any[] = this.results?.data?.entity?.projectsV2?.edges ?? [];
     return edges.map((edge) => new Project(edge.node));
   }
 }
@@ -124,14 +124,15 @@ export class Project {
 }
 
 export const fetchProjectItems = async (
-  orgName: string,
+  login: string,
+  isOrg: boolean,
   projectNumber: number,
   token: string,
   progress?: (loaded: number, total: number) => void,
 ): Promise<ProjectItem[]> => {
   const PROJECT_ITEMS_QUERY = gql`
     query ProjectQuery(
-      $orgName: String!
+      $login: String!
       $projectNumber: Int!
       $itemsFirst: Int
       $itemsAfter: String
@@ -139,7 +140,7 @@ export const fetchProjectItems = async (
       $labelsFirst: Int
       $statusFieldName: String!
     ) {
-      organization(login: $orgName) {
+      entity: ${isOrg ? 'organization' : 'user'}(login: $login) {
         projectV2(number: $projectNumber) {
           items(first: $itemsFirst, after: $itemsAfter) {
             totalCount
@@ -181,6 +182,19 @@ export const fetchProjectItems = async (
                     closedAt
                   }
                   ... on DraftIssue {
+                    title
+                    author: creator {
+                      login
+                      ... on User {
+                        name
+                      }
+                      ... on Organization {
+                        name
+                      }
+                      ... on EnterpriseUserAccount {
+                        name
+                      }
+                    }
                     assignees(first: $assigneesFirst) {
                       nodes {
                         login
@@ -190,6 +204,7 @@ export const fetchProjectItems = async (
                     body
                   }
                   ... on PullRequest {
+                    title
                     assignees(first: $assigneesFirst) {
                       nodes {
                         name
@@ -201,6 +216,10 @@ export const fetchProjectItems = async (
                     url
                     number
                     author {
+                      ... on User {
+                        name
+                        login
+                      }
                       ... on Organization {
                         name
                         login
@@ -237,7 +256,7 @@ export const fetchProjectItems = async (
     queryResults = await client.query({
       query: PROJECT_ITEMS_QUERY,
       variables: {
-        orgName,
+        login,
         projectNumber,
         itemsFirst: 100,
         itemsAfter,
@@ -246,8 +265,8 @@ export const fetchProjectItems = async (
         statusFieldName: 'Status',
       },
     });
-    const totalCount = queryResults.data?.organization?.projectV2?.items?.totalCount ?? 0;
-    const edges: any[] = queryResults?.data?.organization?.projectV2?.items?.edges ?? [];
+    const totalCount = queryResults.data?.entity?.projectV2?.items?.totalCount ?? 0;
+    const edges: any[] = queryResults?.data?.entity?.projectV2?.items?.edges ?? [];
     loadedEdges = [...loadedEdges, ...edges];
     itemsAfter = edges[edges.length - 1].cursor;
     loadedAll = loadedEdges.length === totalCount;

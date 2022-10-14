@@ -9,12 +9,13 @@ import { useLocalStorageState } from './useLocalStorageState';
 const KEY_PREFIX = `github-projectv2-csv-exporter`;
 
 export const EXPORTER_ACCESS_TOKEN_KEY = `${KEY_PREFIX}.token`;
-export const EXPORTER_ORGANIZATION_KEY = `${KEY_PREFIX}.organization`;
+export const EXPORTER_LOGIN_KEY = `${KEY_PREFIX}.login`;
+export const EXPORTER_IS_ORG_KEY = `${KEY_PREFIX}.is-org`;
 export const EXPORTER_INCLUDE_CLOSED_ISSUES_KEY = `${KEY_PREFIX}.include-closed-issues`;
 export const EXPORTER_REMOVE_STATUS_EMOJIS_KEY = `${KEY_PREFIX}.remove-status-emojis`;
 export const EXPORTER_REMOVE_TITLE_EMOJIS_KEY = `${KEY_PREFIX}.remove-title-emojis`;
 export const EXPORTER_KNOWN_COLUMNS_KEY = `${KEY_PREFIX}.known-columns`;
-export const EXPORTER_KNOWN_COLUMNS_DEFAULT = `To Do,In Progress,Done`;
+export const EXPORTER_KNOWN_COLUMNS_DEFAULT = `Todo,In Progress,Done`;
 export const EXPORTER_COLUMN_FILTER_ENABLED_KEY = `${KEY_PREFIX}.column-filter-enabled`;
 export const EXPORTER_COLUMN_FILTER_TEXT_KEY = `${KEY_PREFIX}.column-filter-text`;
 
@@ -26,7 +27,8 @@ export interface GitHubExporterSettingsProps extends DivProps {}
  */
 export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps) => {
   const [accessToken, setAccessToken] = useLocalStorageState('', EXPORTER_ACCESS_TOKEN_KEY);
-  const [organization, setOrganization] = useLocalStorageState('', EXPORTER_ORGANIZATION_KEY);
+  const [isOrg, setIsOrg] = useLocalStorageState('true', EXPORTER_IS_ORG_KEY);
+  const [login, setLogin] = useLocalStorageState('', EXPORTER_LOGIN_KEY);
   const [includeClosedIssues, setIncludeClosedIssues] = useLocalStorageState(
     'false',
     EXPORTER_INCLUDE_CLOSED_ISSUES_KEY,
@@ -133,13 +135,22 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                     </p>
                   </Form.Text>
                 </Form.Group>
+                <Form.Group controlId="fg-closed-issues" className="mb-3">
+                  <Form.Check
+                    label="This is an organization"
+                    id="is-org-checkbox"
+                    checked={isOrg === 'true'}
+                    onChange={(e) => setIsOrg(`${e.target.checked}`)}
+                    className="user-select-none"
+                  />
+                </Form.Group>
                 <Form.Group controlId="fg-org" className="mb-4">
-                  <Form.Label className="fs-6 mb-0">Organization</Form.Label>
+                  <Form.Label className="fs-6 mb-0">{isOrg === 'true' ? 'Organization' : 'Username'}</Form.Label>
                   <Form.Control
                     type="text"
-                    value={organization || ''}
-                    placeholder="Enter the organization login name"
-                    onChange={(e) => setOrganization(e.target.value)}
+                    value={login || ''}
+                    placeholder="Enter the login"
+                    onChange={(e) => setLogin(e.target.value)}
                   />
                 </Form.Group>
                 <Form.Group controlId="fg-closed-issues" className="mb-3">

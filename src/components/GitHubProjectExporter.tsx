@@ -4,15 +4,16 @@ import { ExportToCsv } from 'export-to-csv';
 import React from 'react';
 import { Alert, Badge, Button, Card, Col, Container, ProgressBar, Row, Spinner, Table } from 'react-bootstrap';
 import { DivProps } from 'react-html-props';
-import { fetchOrgProjects, fetchProjectItems, OrgProjects, Project } from '../api/github-projectv2-api';
+import { fetchProjects, fetchProjectItems, Projects, Project } from '../api/github-projectv2-api';
 import {
   EXPORTER_ACCESS_TOKEN_KEY,
   EXPORTER_COLUMN_FILTER_ENABLED_KEY,
   EXPORTER_COLUMN_FILTER_TEXT_KEY,
   EXPORTER_INCLUDE_CLOSED_ISSUES_KEY,
+  EXPORTER_IS_ORG_KEY,
   EXPORTER_KNOWN_COLUMNS_DEFAULT,
   EXPORTER_KNOWN_COLUMNS_KEY,
-  EXPORTER_ORGANIZATION_KEY,
+  EXPORTER_LOGIN_KEY,
   EXPORTER_REMOVE_STATUS_EMOJIS_KEY,
   EXPORTER_REMOVE_TITLE_EMOJIS_KEY,
   settingsPath,
@@ -28,7 +29,8 @@ export interface GitHubProjectExporterProps extends DivProps {}
  */
 export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const [accessToken] = useLocalStorageState('', EXPORTER_ACCESS_TOKEN_KEY);
-  const [organization] = useLocalStorageState('', EXPORTER_ORGANIZATION_KEY);
+  const [isOrg] = useLocalStorageState('true', EXPORTER_IS_ORG_KEY);
+  const [login] = useLocalStorageState('', EXPORTER_LOGIN_KEY);
   const [includeClosedIssues] = useLocalStorageState('false', EXPORTER_INCLUDE_CLOSED_ISSUES_KEY);
   const [removeStatusEmojis] = useLocalStorageState('true', EXPORTER_REMOVE_STATUS_EMOJIS_KEY);
   const [removeTitleEmojis] = useLocalStorageState('false', EXPORTER_REMOVE_TITLE_EMOJIS_KEY);
@@ -38,7 +40,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const knownColumns = (knownColumnsText ?? '').split(',').filter((c) => !!c);
   const selectedColumnNames = (columnFilterText ?? '').split(',').filter((c) => !!c);
 
-  const [orgProjects, setOrgProjects] = React.useState<OrgProjects | undefined>(undefined);
+  const [orgProjects, setOrgProjects] = React.useState<Projects | undefined>(undefined);
   const [loadProjectsError, setLoadProjectsError] = React.useState<Error | undefined>(undefined);
   const [exportProjectItemsError, setExportProjectItemsError] = React.useState<Error | undefined>(undefined);
   const [noItemsAlertShown, setNoItemsAlertShown] = React.useState(false);
@@ -50,8 +52,8 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const [progressTotal, setProgressTotal] = React.useState(0);
 
   React.useEffect(() => {
-    if (accessToken && organization && loading) {
-      fetchOrgProjects(organization, accessToken)
+    if (accessToken && login && loading) {
+      fetchProjects(login, isOrg === 'true', accessToken)
         .then((orgProjects) => {
           setOrgProjects(orgProjects);
         })
@@ -61,11 +63,11 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
         })
         .finally(() => setLoading(false));
     }
-  }, [accessToken, organization, loading]);
+  }, [accessToken, login, loading, isOrg]);
 
   const handleExportCSV = (project: Project) => {
     const projectNumber = project.getProjectNumber() ?? -1;
-    if (accessToken && organization && projectNumber >= 0) {
+    if (accessToken && login && projectNumber >= 0) {
       setExporting(true);
       setExportingProjectNumber(projectNumber);
       setProgressCurrent(0);
@@ -96,7 +98,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
       progress(0, project.getTotalItemCount() ?? 0);
       // END smooth loading progress bar
 
-      fetchProjectItems(organization, projectNumber, accessToken, progress)
+      fetchProjectItems(login, isOrg === 'true', projectNumber, accessToken, progress)
         .then((projectItems) => {
           const dataRows = projectItems
             .filter((item) => (includeClosedIssues === 'true' ? true : item.getState() !== 'CLOSED'))
@@ -189,7 +191,11 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
           <td valign="middle">
             <div className="d-flex flex-column gap-2">
               <div>
-                <Button variant="primary" onClick={() => handleExportCSV(project)} disabled={exporting}>
+                <Button
+                  variant="primary"
+                  onClick={() => handleExportCSV(project)}
+                  disabled={exporting || !project.getTotalItemCount()}
+                >
                   {currentlyExporting && <Spinner animation="border" role="status" size="sm" />} Export CSV
                 </Button>
               </div>
@@ -218,7 +224,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
     csvExporter.generateCsv(jsonData);
   };
 
-  const validSettings = accessToken && organization;
+  const validSettings = accessToken && login;
 
   const selectedColumnElements = selectedColumnNames.map((col, index) => (
     <Badge key={`${col}-${index}`} bg="primary">
@@ -241,11 +247,11 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
               {loadProjectsError && (
                 <Alert variant="danger" className="mb-2">
                   <p className="fw-bold">
-                    Could not load projects for organization{' '}
+                    Could not load projects for{' '}
                     <Badge bg="danger" className="font-monospace">
-                      {organization}
+                      {login}
                     </Badge>
-                    . Please check your access token and organization name.
+                    . Please check your access token and login.
                   </p>
                   <p className="mb-0 font-monospace small">{`${loadProjectsError}`}</p>
                 </Alert>
@@ -269,9 +275,9 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                         Add a <span className="fw-bold">GitHub access token</span>.
                       </li>
                     )}
-                    {!organization && (
+                    {!login && (
                       <li>
-                        Add an <span className="fw-bold">organization name</span>.
+                        Add an <span className="fw-bold">organization or user login</span>.
                       </li>
                     )}
                   </ul>
@@ -331,9 +337,9 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                       </thead>
                       <tbody>
                         <tr>
-                          <td>Organization</td>
+                          <td>{isOrg === 'true' ? 'Organization' : 'Username'}</td>
                           <td>
-                            <code>{organization}</code>
+                            <code>{login}</code>
                           </td>
                         </tr>
                         <tr>

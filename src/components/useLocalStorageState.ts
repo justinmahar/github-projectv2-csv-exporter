@@ -2,6 +2,7 @@ import React from 'react';
 import EventEmitter from 'events';
 
 const eventEmitter = new EventEmitter();
+eventEmitter.setMaxListeners(100);
 
 export const useLocalStorageState = (
   initial: string | null,

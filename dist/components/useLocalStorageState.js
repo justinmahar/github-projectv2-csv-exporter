@@ -7,6 +7,7 @@ exports.useLocalStorageState = void 0;
 const react_1 = __importDefault(require("react"));
 const events_1 = __importDefault(require("events"));
 const eventEmitter = new events_1.default();
+eventEmitter.setMaxListeners(100);
 const useLocalStorageState = (initial, key) => {
     var _a;
     const [state, setState] = react_1.default.useState(typeof localStorage !== 'undefined' ? (_a = localStorage[key]) !== null && _a !== void 0 ? _a : initial : initial);

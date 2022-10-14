@@ -87,7 +87,7 @@ fetchProjects('my-org', true, 'abc123mytoken').then((orgProjects) =>
     'Loaded projects:',
     orgProjects
       .getProjects()
-      .map((p) => p.getTitle() + ` (${p.getTotalItemCount()})`)
+      .map((p) => p.getTitle() + ` (number ${p.getProjectNumber()} | ${p.getTotalItemCount()} items)`)
       .join(', '),
   ),
 );

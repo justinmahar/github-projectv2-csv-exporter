@@ -299,7 +299,11 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                         <a href={projects.getUrl() ?? ''}>
                           <Badge bg="success">
                             <div className="d-flex align-items-center gap-2">
-                              <Image src={projects.getAvatarUrl() ?? ''} roundedCircle style={{ width: 20 }} />
+                              <Image
+                                src={projects.getAvatarUrl() ?? ''}
+                                roundedCircle
+                                style={{ width: 20, height: 20, minWidth: 20, minHeight: 20 }}
+                              />
                               {projects.getName()}
                             </div>
                           </Badge>
@@ -308,7 +312,11 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                           <a href={projects.getViewerUrl() ?? ''}>
                             <Badge bg="info">
                               <div className="d-flex align-items-center gap-2">
-                                <Image src={projects.getViewerAvatarUrl() ?? ''} roundedCircle style={{ width: 20 }} />
+                                <Image
+                                  src={projects.getViewerAvatarUrl() ?? ''}
+                                  roundedCircle
+                                  style={{ width: 20, height: 20, minWidth: 20, minHeight: 20 }}
+                                />
                                 {projects.getViewerName()}
                               </div>
                             </Badge>

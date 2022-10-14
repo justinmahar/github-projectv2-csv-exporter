@@ -38,6 +38,7 @@ const GitHubProjectExporter = (props) => {
     const [exportingProjectNumber, setExportingProjectNumber] = react_1.default.useState(-1);
     const [progressCurrent, setProgressCurrent] = react_1.default.useState(0);
     const [progressTotal, setProgressTotal] = react_1.default.useState(0);
+    const [showStarMessage, setShowStarMessage] = react_1.default.useState(false);
     react_1.default.useEffect(() => {
         if (accessToken && login && loading) {
             (0, github_projectv2_api_1.fetchProjects)(login, isOrg === 'true', accessToken)
@@ -132,6 +133,7 @@ const GitHubProjectExporter = (props) => {
                         return `${aStatusPlaceholder}.${a.Assignees}.${a.Number}`.localeCompare(`${bStatusPlaceholder}.${b.Assignees}.${b.Number}`);
                     });
                     exportCsv(dataRows, filename);
+                    setShowStarMessage(true);
                 }
                 else {
                     setNoItemsAlertShown(true);
@@ -218,7 +220,7 @@ const GitHubProjectExporter = (props) => {
                                 "Just head over to ",
                                 react_1.default.createElement("a", { href: GitHubProjectExporterSettings_1.settingsPath }, "settings"),
                                 " to get those configured, then come back here when you're ready."))),
-                        validSettings && (react_1.default.createElement(react_bootstrap_1.Card, { className: "mb-2" },
+                        validSettings && (react_1.default.createElement(react_bootstrap_1.Card, { className: "mb-0" },
                             react_1.default.createElement(react_bootstrap_1.Card.Header, null, "Projects"),
                             react_1.default.createElement(react_bootstrap_1.Card.Body, null,
                                 loading && (react_1.default.createElement("div", { className: "d-flex justify-content-center align-items-center", style: { height: 120 } },
@@ -247,6 +249,11 @@ const GitHubProjectExporter = (props) => {
                                             react_1.default.createElement("td", { colSpan: 4 }, "No projects found.")))))),
                                 react_1.default.createElement("div", { className: "d-flex justify-content-end" },
                                     react_1.default.createElement(react_bootstrap_1.Button, { variant: "primary", onClick: () => setLoading(true) }, "Refresh"))))),
+                        validSettings && showStarMessage && (react_1.default.createElement("h6", { className: "text-center text-muted my-2" },
+                            "If this project helped you, please",
+                            ' ',
+                            react_1.default.createElement("a", { href: "https://github.com/justinmahar/github-projectv2-csv-exporter/" }, "Star it on GitHub"),
+                            " so others can find it. :)")),
                         validSettings && (react_1.default.createElement(react_bootstrap_1.Card, { className: "mb-2" },
                             react_1.default.createElement(react_bootstrap_1.Card.Header, null, "Settings"),
                             react_1.default.createElement(react_bootstrap_1.Card.Body, null,

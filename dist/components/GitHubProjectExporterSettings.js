@@ -137,7 +137,8 @@ const GitHubExporterSettings = (_a) => {
                                                         setEnteredKnownColumn('');
                                                         (_a = knownColumnRef.current) === null || _a === void 0 ? void 0 : _a.focus();
                                                     } }, "Add Column")),
-                                            react_1.default.createElement("div", { className: "d-flex flex-wrap gap-2" }, knownColumnsElements))))),
+                                            react_1.default.createElement("div", { className: "d-flex flex-wrap gap-2" }, knownColumnsElements)))),
+                                react_1.default.createElement(react_bootstrap_1.Form.Text, { className: "text-muted" }, "Optionally, you can add the status column names from your project's boards if you'd like to filter your results based on specific columns. Adding Known Columns makes it easier to filter using the \"Only include issues in the following columns\" setting above. Your CSV will also sort cards in the order these known columns appear.")),
                             react_1.default.createElement("div", { className: "d-flex justify-content-end mt-4" },
                                 react_1.default.createElement("a", { href: GitHubProjectExporter_1.exporterPath },
                                     react_1.default.createElement(react_bootstrap_1.Button, { variant: "primary" }, "Open Exporter"))))))))));

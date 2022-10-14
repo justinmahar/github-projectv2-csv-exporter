@@ -11,7 +11,10 @@ const KEY_PREFIX = `github-projectv2-csv-exporter`;
 export const EXPORTER_ACCESS_TOKEN_KEY = `${KEY_PREFIX}.token`;
 export const EXPORTER_LOGIN_KEY = `${KEY_PREFIX}.login`;
 export const EXPORTER_IS_ORG_KEY = `${KEY_PREFIX}.is-org`;
-export const EXPORTER_INCLUDE_CLOSED_ISSUES_KEY = `${KEY_PREFIX}.include-closed-issues`;
+export const EXPORTER_INCLUDE_ISSUES_KEY = `${KEY_PREFIX}.include-issues`;
+export const EXPORTER_INCLUDE_PULL_REQUESTS_KEY = `${KEY_PREFIX}.include-pull-requests`;
+export const EXPORTER_INCLUDE_DRAFT_ISSUES_KEY = `${KEY_PREFIX}.include-draft-issues`;
+export const EXPORTER_INCLUDE_CLOSED_ITEMS_KEY = `${KEY_PREFIX}.include-closed-items`;
 export const EXPORTER_REMOVE_STATUS_EMOJIS_KEY = `${KEY_PREFIX}.remove-status-emojis`;
 export const EXPORTER_REMOVE_TITLE_EMOJIS_KEY = `${KEY_PREFIX}.remove-title-emojis`;
 export const EXPORTER_KNOWN_COLUMNS_KEY = `${KEY_PREFIX}.known-columns`;
@@ -29,10 +32,13 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
   const [accessToken, setAccessToken] = useLocalStorageState('', EXPORTER_ACCESS_TOKEN_KEY);
   const [isOrg, setIsOrg] = useLocalStorageState('true', EXPORTER_IS_ORG_KEY);
   const [login, setLogin] = useLocalStorageState('', EXPORTER_LOGIN_KEY);
-  const [includeClosedIssues, setIncludeClosedIssues] = useLocalStorageState(
+  const [includeIssues, setIncludeIssues] = useLocalStorageState('true', EXPORTER_INCLUDE_ISSUES_KEY);
+  const [includePullRequests, setIncludePullRequests] = useLocalStorageState(
     'false',
-    EXPORTER_INCLUDE_CLOSED_ISSUES_KEY,
+    EXPORTER_INCLUDE_PULL_REQUESTS_KEY,
   );
+  const [includeDraftIssues, setIncludeDraftIssues] = useLocalStorageState('false', EXPORTER_INCLUDE_DRAFT_ISSUES_KEY);
+  const [includeClosedItems, setIncludeClosedItems] = useLocalStorageState('false', EXPORTER_INCLUDE_CLOSED_ITEMS_KEY);
   const [removeStatusEmojis, setRemoveStatusEmojis] = useLocalStorageState('true', EXPORTER_REMOVE_STATUS_EMOJIS_KEY);
   const [removeTitleEmojis, setRemoveTitleEmojis] = useLocalStorageState('false', EXPORTER_REMOVE_TITLE_EMOJIS_KEY);
   const [knownColumnsText, setKnownColumnsText] = useLocalStorageState(
@@ -153,12 +159,39 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                     onChange={(e) => setLogin(e.target.value)}
                   />
                 </Form.Group>
-                <Form.Group controlId="fg-closed-issues" className="mb-3">
+                <Form.Group controlId="fg-issues" className="mb-3">
                   <Form.Check
-                    label="Include closed issues"
+                    label="Include issues"
+                    id="issues-checkbox"
+                    checked={includeIssues === 'true'}
+                    onChange={(e) => setIncludeIssues(`${e.target.checked}`)}
+                    className="user-select-none"
+                  />
+                </Form.Group>
+                <Form.Group controlId="fg-pull-requests" className="mb-3">
+                  <Form.Check
+                    label="Include pull requests"
+                    id="pull-requests-checkbox"
+                    checked={includePullRequests === 'true'}
+                    onChange={(e) => setIncludePullRequests(`${e.target.checked}`)}
+                    className="user-select-none"
+                  />
+                </Form.Group>
+                <Form.Group controlId="fg-draft-issues" className="mb-3">
+                  <Form.Check
+                    label="Include draft issues"
+                    id="draft-issues-checkbox"
+                    checked={includeDraftIssues === 'true'}
+                    onChange={(e) => setIncludeDraftIssues(`${e.target.checked}`)}
+                    className="user-select-none"
+                  />
+                </Form.Group>
+                <Form.Group controlId="fg-closed-items" className="mb-3">
+                  <Form.Check
+                    label="Include closed items"
                     id="closed-issues-checkbox"
-                    checked={includeClosedIssues === 'true'}
-                    onChange={(e) => setIncludeClosedIssues(`${e.target.checked}`)}
+                    checked={includeClosedItems === 'true'}
+                    onChange={(e) => setIncludeClosedItems(`${e.target.checked}`)}
                     className="user-select-none"
                   />
                 </Form.Group>
@@ -184,7 +217,7 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                 <Form.Group controlId="fg-column-filter" className="mb-3">
                   <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
                     <Form.Check
-                      label="Only include issues in the following columns:"
+                      label="Only include issues in the following statuses:"
                       id="column-filter-checkbox"
                       checked={columnFilterEnabled === 'true'}
                       onChange={(e) => setColumnFilterEnabled(`${e.target.checked}`)}
@@ -193,7 +226,7 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                     <Form.Control
                       type="text"
                       value={columnFilterText ?? ''}
-                      placeholder="Enter column name"
+                      placeholder={columnFilterEnabled !== 'true' ? '' : 'Enter status name'}
                       onChange={(e) => setColumnFilterText(e.target.value)}
                       style={{ width: 220 }}
                       disabled={columnFilterEnabled !== 'true'}
@@ -206,7 +239,7 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                     <Accordion.Item eventKey="0">
                       <Accordion.Header>
                         <div className="d-flex gap-2">
-                          Known Columns
+                          Known Statuses
                           <Badge pill bg={knownColumns.length > 0 ? 'primary' : 'secondary'}>
                             {knownColumns.length}
                           </Badge>
@@ -218,7 +251,7 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                             ref={knownColumnRef}
                             type="text"
                             value={enteredKnownColumn}
-                            placeholder="Enter column name"
+                            placeholder="Enter status name"
                             onChange={(e) => setEnteredKnownColumn(e.target.value)}
                             autoComplete="off"
                             style={{ width: 200 }}
@@ -231,7 +264,7 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                               knownColumnRef.current?.focus();
                             }}
                           >
-                            Add Column
+                            Add Status
                           </Button>
                         </div>
                         <div className="d-flex flex-wrap gap-2">{knownColumnsElements}</div>
@@ -239,10 +272,10 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                     </Accordion.Item>
                   </Accordion>
                   <Form.Text className="text-muted">
-                    Optionally, you can add the status column names from your project's boards if you'd like to filter
-                    your results based on specific columns. Adding Known Columns makes it easier to filter using the
-                    "Only include issues in the following columns" setting above. Your CSV will also sort cards in the
-                    order these known columns appear.
+                    Optionally, you can add the status names from your project's boards if you'd like to filter your
+                    results based on specific statuses. Adding Known Statuses makes it easier to filter using the "Only
+                    include issues in the following statuses" setting above. Your CSV will also sort cards in the order
+                    these known statuses appear.
                   </Form.Text>
                 </Form.Group>
                 <div className="d-flex justify-content-end mt-4">

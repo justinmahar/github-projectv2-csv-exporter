@@ -9,7 +9,10 @@ import {
   EXPORTER_ACCESS_TOKEN_KEY,
   EXPORTER_COLUMN_FILTER_ENABLED_KEY,
   EXPORTER_COLUMN_FILTER_TEXT_KEY,
-  EXPORTER_INCLUDE_CLOSED_ISSUES_KEY,
+  EXPORTER_INCLUDE_CLOSED_ITEMS_KEY,
+  EXPORTER_INCLUDE_DRAFT_ISSUES_KEY,
+  EXPORTER_INCLUDE_ISSUES_KEY,
+  EXPORTER_INCLUDE_PULL_REQUESTS_KEY,
   EXPORTER_IS_ORG_KEY,
   EXPORTER_KNOWN_COLUMNS_DEFAULT,
   EXPORTER_KNOWN_COLUMNS_KEY,
@@ -31,7 +34,10 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const [accessToken] = useLocalStorageState('', EXPORTER_ACCESS_TOKEN_KEY);
   const [isOrg] = useLocalStorageState('true', EXPORTER_IS_ORG_KEY);
   const [login] = useLocalStorageState('', EXPORTER_LOGIN_KEY);
-  const [includeClosedIssues] = useLocalStorageState('false', EXPORTER_INCLUDE_CLOSED_ISSUES_KEY);
+  const [includeIssues] = useLocalStorageState('true', EXPORTER_INCLUDE_ISSUES_KEY);
+  const [includePullRequests] = useLocalStorageState('false', EXPORTER_INCLUDE_PULL_REQUESTS_KEY);
+  const [includeDraftIssues] = useLocalStorageState('false', EXPORTER_INCLUDE_DRAFT_ISSUES_KEY);
+  const [includeClosedItems] = useLocalStorageState('false', EXPORTER_INCLUDE_CLOSED_ITEMS_KEY);
   const [removeStatusEmojis] = useLocalStorageState('true', EXPORTER_REMOVE_STATUS_EMOJIS_KEY);
   const [removeTitleEmojis] = useLocalStorageState('false', EXPORTER_REMOVE_TITLE_EMOJIS_KEY);
   const [columnFilterEnabled] = useLocalStorageState('false', EXPORTER_COLUMN_FILTER_ENABLED_KEY);
@@ -51,6 +57,8 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const [progressCurrent, setProgressCurrent] = React.useState(0);
   const [progressTotal, setProgressTotal] = React.useState(0);
   const [showStarMessage, setShowStarMessage] = React.useState(false);
+
+  const noItemsIncluded = includeIssues === 'false' && includePullRequests === 'false' && includeDraftIssues;
 
   React.useEffect(() => {
     if (accessToken && login && loading) {
@@ -102,10 +110,15 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
       fetchProjectItems(login, isOrg === 'true', projectNumber, accessToken, progress)
         .then((projectItems) => {
           const dataRows = projectItems
-            .filter((item) => (includeClosedIssues === 'true' ? true : item.getState() !== 'CLOSED'))
-            .filter((item) =>
-              columnFilterEnabled !== 'true' ? true : selectedColumnNames.includes(item.getStatus() ?? ''),
-            )
+            .filter((item) => {
+              return (
+                (includeIssues === 'true' ? true : item.getType() !== 'ISSUE') &&
+                (includePullRequests === 'true' ? true : item.getType() !== 'PULL_REQUEST') &&
+                (includeDraftIssues === 'true' ? true : item.getType() !== 'DRAFT_ISSUE') &&
+                (includeClosedItems === 'true' ? true : item.getState() !== 'CLOSED') &&
+                (columnFilterEnabled !== 'true' ? true : selectedColumnNames.includes(item.getStatus() ?? ''))
+              );
+            })
             .map((item) => {
               const rawTitle = item.getTitle() ?? '';
               const rawStatus = item.getStatus() ?? '';
@@ -380,13 +393,46 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                           </td>
                         </tr>
                         <tr>
-                          <td>Include closed issues</td>
+                          <td>Include issues</td>
                           <td>
                             <Badge
-                              bg={includeClosedIssues === 'true' ? 'primary' : 'secondary'}
+                              bg={includeIssues === 'true' ? 'primary' : noItemsIncluded ? 'danger' : 'secondary'}
                               style={{ fontVariant: 'small-caps' }}
                             >
-                              {includeClosedIssues === 'true' ? 'yes' : 'no'}
+                              {includeIssues === 'true' ? 'yes' : 'no'}
+                            </Badge>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Include pull requests</td>
+                          <td>
+                            <Badge
+                              bg={includePullRequests === 'true' ? 'primary' : noItemsIncluded ? 'danger' : 'secondary'}
+                              style={{ fontVariant: 'small-caps' }}
+                            >
+                              {includePullRequests === 'true' ? 'yes' : 'no'}
+                            </Badge>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Include draft issues</td>
+                          <td>
+                            <Badge
+                              bg={includeDraftIssues === 'true' ? 'primary' : noItemsIncluded ? 'danger' : 'secondary'}
+                              style={{ fontVariant: 'small-caps' }}
+                            >
+                              {includeDraftIssues === 'true' ? 'yes' : 'no'}
+                            </Badge>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Include closed items</td>
+                          <td>
+                            <Badge
+                              bg={includeClosedItems === 'true' ? 'primary' : 'secondary'}
+                              style={{ fontVariant: 'small-caps' }}
+                            >
+                              {includeClosedItems === 'true' ? 'yes' : 'no'}
                             </Badge>
                           </td>
                         </tr>
@@ -413,12 +459,18 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                           </td>
                         </tr>
                         <tr>
-                          <td>Columns included</td>
+                          <td>Statuses included</td>
                           <td>
                             {columnFilterEnabled === 'true' ? (
-                              <div className="d-flex flex-wrap gap-1">{selectedColumnElements}</div>
+                              <div className="d-flex flex-wrap gap-1">
+                                {selectedColumnElements.length > 0 ? (
+                                  selectedColumnElements
+                                ) : (
+                                  <Badge bg="danger">None</Badge>
+                                )}
+                              </div>
                             ) : (
-                              <Badge bg="primary">Include all columns</Badge>
+                              <Badge bg="primary">Include all statuses</Badge>
                             )}
                           </td>
                         </tr>

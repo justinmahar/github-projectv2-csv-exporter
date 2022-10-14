@@ -19,8 +19,7 @@ import {
 } from './GitHubProjectExporterSettings';
 import { useLocalStorageState } from './useLocalStorageState';
 
-export const exporterPath =
-  '/github-projectv2-csv-exporter/iframe.html?id=tools-github-project-exporter--exporter&viewMode=story';
+export const exporterPath = '/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--exporter';
 
 export interface GitHubProjectExporterProps extends DivProps {}
 

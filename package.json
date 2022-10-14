@@ -1,6 +1,6 @@
 {
   "name": "github-projectv2-csv-exporter",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "Justin Mahar <contact@justinmahar.com>",
   "description": "Export an organization's GitHub projects (ProjectV2) as CSV files.",
   "homepage": "https://justinmahar.github.io/github-projectv2-csv-exporter/",

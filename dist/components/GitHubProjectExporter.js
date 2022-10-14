@@ -21,7 +21,10 @@ const GitHubProjectExporter = (props) => {
     const [accessToken] = (0, useLocalStorageState_1.useLocalStorageState)('', GitHubProjectExporterSettings_1.EXPORTER_ACCESS_TOKEN_KEY);
     const [isOrg] = (0, useLocalStorageState_1.useLocalStorageState)('true', GitHubProjectExporterSettings_1.EXPORTER_IS_ORG_KEY);
     const [login] = (0, useLocalStorageState_1.useLocalStorageState)('', GitHubProjectExporterSettings_1.EXPORTER_LOGIN_KEY);
-    const [includeClosedIssues] = (0, useLocalStorageState_1.useLocalStorageState)('false', GitHubProjectExporterSettings_1.EXPORTER_INCLUDE_CLOSED_ISSUES_KEY);
+    const [includeIssues] = (0, useLocalStorageState_1.useLocalStorageState)('true', GitHubProjectExporterSettings_1.EXPORTER_INCLUDE_ISSUES_KEY);
+    const [includePullRequests] = (0, useLocalStorageState_1.useLocalStorageState)('false', GitHubProjectExporterSettings_1.EXPORTER_INCLUDE_PULL_REQUESTS_KEY);
+    const [includeDraftIssues] = (0, useLocalStorageState_1.useLocalStorageState)('false', GitHubProjectExporterSettings_1.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY);
+    const [includeClosedItems] = (0, useLocalStorageState_1.useLocalStorageState)('false', GitHubProjectExporterSettings_1.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY);
     const [removeStatusEmojis] = (0, useLocalStorageState_1.useLocalStorageState)('true', GitHubProjectExporterSettings_1.EXPORTER_REMOVE_STATUS_EMOJIS_KEY);
     const [removeTitleEmojis] = (0, useLocalStorageState_1.useLocalStorageState)('false', GitHubProjectExporterSettings_1.EXPORTER_REMOVE_TITLE_EMOJIS_KEY);
     const [columnFilterEnabled] = (0, useLocalStorageState_1.useLocalStorageState)('false', GitHubProjectExporterSettings_1.EXPORTER_COLUMN_FILTER_ENABLED_KEY);
@@ -39,6 +42,7 @@ const GitHubProjectExporter = (props) => {
     const [progressCurrent, setProgressCurrent] = react_1.default.useState(0);
     const [progressTotal, setProgressTotal] = react_1.default.useState(0);
     const [showStarMessage, setShowStarMessage] = react_1.default.useState(false);
+    const noItemsIncluded = includeIssues === 'false' && includePullRequests === 'false' && includeDraftIssues;
     react_1.default.useEffect(() => {
         if (accessToken && login && loading) {
             (0, github_projectv2_api_1.fetchProjects)(login, isOrg === 'true', accessToken)
@@ -85,8 +89,14 @@ const GitHubProjectExporter = (props) => {
             (0, github_projectv2_api_1.fetchProjectItems)(login, isOrg === 'true', projectNumber, accessToken, progress)
                 .then((projectItems) => {
                 const dataRows = projectItems
-                    .filter((item) => (includeClosedIssues === 'true' ? true : item.getState() !== 'CLOSED'))
-                    .filter((item) => { var _a; return columnFilterEnabled !== 'true' ? true : selectedColumnNames.includes((_a = item.getStatus()) !== null && _a !== void 0 ? _a : ''); })
+                    .filter((item) => {
+                    var _a;
+                    return ((includeIssues === 'true' ? true : item.getType() !== 'ISSUE') &&
+                        (includePullRequests === 'true' ? true : item.getType() !== 'PULL_REQUEST') &&
+                        (includeDraftIssues === 'true' ? true : item.getType() !== 'DRAFT_ISSUE') &&
+                        (includeClosedItems === 'true' ? true : item.getState() !== 'CLOSED') &&
+                        (columnFilterEnabled !== 'true' ? true : selectedColumnNames.includes((_a = item.getStatus()) !== null && _a !== void 0 ? _a : '')));
+                })
                     .map((item) => {
                     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
                     const rawTitle = (_a = item.getTitle()) !== null && _a !== void 0 ? _a : '';
@@ -268,9 +278,21 @@ const GitHubProjectExporter = (props) => {
                                             react_1.default.createElement("td", null,
                                                 react_1.default.createElement("code", null, login))),
                                         react_1.default.createElement("tr", null,
-                                            react_1.default.createElement("td", null, "Include closed issues"),
+                                            react_1.default.createElement("td", null, "Include issues"),
                                             react_1.default.createElement("td", null,
-                                                react_1.default.createElement(react_bootstrap_1.Badge, { bg: includeClosedIssues === 'true' ? 'primary' : 'secondary', style: { fontVariant: 'small-caps' } }, includeClosedIssues === 'true' ? 'yes' : 'no'))),
+                                                react_1.default.createElement(react_bootstrap_1.Badge, { bg: includeIssues === 'true' ? 'primary' : noItemsIncluded ? 'danger' : 'secondary', style: { fontVariant: 'small-caps' } }, includeIssues === 'true' ? 'yes' : 'no'))),
+                                        react_1.default.createElement("tr", null,
+                                            react_1.default.createElement("td", null, "Include pull requests"),
+                                            react_1.default.createElement("td", null,
+                                                react_1.default.createElement(react_bootstrap_1.Badge, { bg: includePullRequests === 'true' ? 'primary' : noItemsIncluded ? 'danger' : 'secondary', style: { fontVariant: 'small-caps' } }, includePullRequests === 'true' ? 'yes' : 'no'))),
+                                        react_1.default.createElement("tr", null,
+                                            react_1.default.createElement("td", null, "Include draft issues"),
+                                            react_1.default.createElement("td", null,
+                                                react_1.default.createElement(react_bootstrap_1.Badge, { bg: includeDraftIssues === 'true' ? 'primary' : noItemsIncluded ? 'danger' : 'secondary', style: { fontVariant: 'small-caps' } }, includeDraftIssues === 'true' ? 'yes' : 'no'))),
+                                        react_1.default.createElement("tr", null,
+                                            react_1.default.createElement("td", null, "Include closed items"),
+                                            react_1.default.createElement("td", null,
+                                                react_1.default.createElement(react_bootstrap_1.Badge, { bg: includeClosedItems === 'true' ? 'primary' : 'secondary', style: { fontVariant: 'small-caps' } }, includeClosedItems === 'true' ? 'yes' : 'no'))),
                                         react_1.default.createElement("tr", null,
                                             react_1.default.createElement("td", null, "Remove Status emojis"),
                                             react_1.default.createElement("td", null,
@@ -280,8 +302,8 @@ const GitHubProjectExporter = (props) => {
                                             react_1.default.createElement("td", null,
                                                 react_1.default.createElement(react_bootstrap_1.Badge, { bg: removeTitleEmojis === 'true' ? 'primary' : 'secondary', style: { fontVariant: 'small-caps' } }, removeTitleEmojis === 'true' ? 'yes' : 'no'))),
                                         react_1.default.createElement("tr", null,
-                                            react_1.default.createElement("td", null, "Columns included"),
-                                            react_1.default.createElement("td", null, columnFilterEnabled === 'true' ? (react_1.default.createElement("div", { className: "d-flex flex-wrap gap-1" }, selectedColumnElements)) : (react_1.default.createElement(react_bootstrap_1.Badge, { bg: "primary" }, "Include all columns")))))),
+                                            react_1.default.createElement("td", null, "Statuses included"),
+                                            react_1.default.createElement("td", null, columnFilterEnabled === 'true' ? (react_1.default.createElement("div", { className: "d-flex flex-wrap gap-1" }, selectedColumnElements.length > 0 ? (selectedColumnElements) : (react_1.default.createElement(react_bootstrap_1.Badge, { bg: "danger" }, "None")))) : (react_1.default.createElement(react_bootstrap_1.Badge, { bg: "primary" }, "Include all statuses")))))),
                                 react_1.default.createElement("div", { className: "d-flex justify-content-end" },
                                     react_1.default.createElement("a", { href: GitHubProjectExporterSettings_1.settingsPath },
                                         react_1.default.createElement(react_bootstrap_1.Button, { variant: "primary" }, "Change Settings"))))))))))));

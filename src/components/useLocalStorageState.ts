@@ -18,7 +18,9 @@ export const useLocalStorageState = (
       }
     };
     eventEmitter.addListener('change', listener);
-    return () => eventEmitter.removeListener('change', listener);
+    return () => {
+      eventEmitter.removeListener('change', listener);
+    };
   }, [initial, key]);
 
   const setStateCombined = (value: string | null) => {

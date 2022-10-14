@@ -75,6 +75,21 @@ fetchOrgProjects = async (orgName: string, token: string): Promise<OrgProjects>
 
 Provide an org name and the token. The promise will be resolved with an `OrgProjects` instance.
 
+##### Example
+
+```ts
+import { fetchOrgProjects } from 'github-projectv2-csv-exporter';
+// ...
+fetchOrgProjects('my-org', 'abc123mytoken').then((orgProjects) =>
+  console.log(
+    'Loaded projects:',
+    orgProjects
+      .getProjects()
+      .map((p) => p.getTitle() + ` (${p.getTotalItemCount()})`)
+      .join(', '),
+  ),
+);
+```
 
 #### fetchProjectItems
 
@@ -85,6 +100,17 @@ fetchProjectItems = async (orgName: string, projectNumber: number, token: string
 Provide an org name, project number, and token. Optionally, you can provide a `progress` function that will be called periodically with the number of items loaded, and the total expected.
 
 The promise will be resolved with an array of `ProjectItem` instances.
+
+##### Example
+
+```ts
+import { fetchProjectItems } from 'github-projectv2-csv-exporter';
+// ...
+const projectNumber = loadedProject.getProjectNumber();
+fetchProjectItems('my-org', projectNumber, 'abc123mytoken', (loaded, total) =>
+  console.log(`Progress: ${Math.round((loaded / total) * 100)}%`),
+).then((items) => console.log('Loaded', items.length, 'items'));
+```
 
 ## Icon Attribution
 

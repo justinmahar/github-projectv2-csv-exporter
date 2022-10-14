@@ -1,18 +1,18 @@
 import { ApolloClient } from '@apollo/client';
 export declare const GITHUB_API_URL = "https://api.github.com/graphql";
 export declare const createGQLClient: (token: string) => ApolloClient<import("@apollo/client").NormalizedCacheObject>;
-export declare const fetchOrgProjects: (orgName: string, token: string) => Promise<OrgProjects>;
-export declare class OrgProjects {
+export declare const fetchProjects: (login: string, isOrg: boolean, token: string) => Promise<Projects>;
+export declare class Projects {
     results: any;
     constructor(results: any);
     getViewerLogin(): string | undefined;
     getViewerAvatarUrl(): string | undefined;
     getViewerUrl(): string | undefined;
     getViewerName(): string | undefined;
-    getOrganizationLogin(): string | undefined;
-    getOrganizationAvatarUrl(): string | undefined;
-    getOrganizationUrl(): string | undefined;
-    getOrganizationName(): string | undefined;
+    getLogin(): string | undefined;
+    getAvatarUrl(): string | undefined;
+    getUrl(): string | undefined;
+    getName(): string | undefined;
     getProjects(): Project[];
 }
 export declare class Project {
@@ -23,7 +23,7 @@ export declare class Project {
     getUrl(): string | undefined;
     getTotalItemCount(): number | undefined;
 }
-export declare const fetchProjectItems: (orgName: string, projectNumber: number, token: string, progress?: ((loaded: number, total: number) => void) | undefined) => Promise<ProjectItem[]>;
+export declare const fetchProjectItems: (login: string, isOrg: boolean, projectNumber: number, token: string, progress?: ((loaded: number, total: number) => void) | undefined) => Promise<ProjectItem[]>;
 export declare class ProjectItem {
     node: any;
     constructor(node: any);

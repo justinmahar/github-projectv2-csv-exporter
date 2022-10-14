@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProjectItem = exports.fetchProjectItems = exports.Project = exports.OrgProjects = exports.fetchOrgProjects = exports.createGQLClient = exports.GITHUB_API_URL = void 0;
+exports.ProjectItem = exports.fetchProjectItems = exports.Project = exports.Projects = exports.fetchProjects = exports.createGQLClient = exports.GITHUB_API_URL = void 0;
 const client_1 = require("@apollo/client");
 const context_1 = require("@apollo/client/link/context");
 // GitHub Auth instructions: https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql
@@ -35,16 +35,16 @@ const createGQLClient = (token) => {
     return client;
 };
 exports.createGQLClient = createGQLClient;
-const fetchOrgProjects = (orgName, token) => __awaiter(void 0, void 0, void 0, function* () {
+const fetchProjects = (login, isOrg, token) => __awaiter(void 0, void 0, void 0, function* () {
     const ORG_PROJECTS_QUERY = (0, client_1.gql) `
-    query ProjectsQuery($orgName: String!, $projectsFirst: Int) {
+    query ProjectsQuery($login: String!, $projectsFirst: Int) {
       viewer {
         login
         name
         url
         avatarUrl
       }
-      organization(login: $orgName) {
+      entity: ${isOrg ? 'organization' : 'user'}(login: $login) {
         avatarUrl
         login
         name
@@ -68,14 +68,14 @@ const fetchOrgProjects = (orgName, token) => __awaiter(void 0, void 0, void 0, f
     const results = yield client.query({
         query: ORG_PROJECTS_QUERY,
         variables: {
-            orgName,
+            login,
             projectsFirst: 100,
         },
     });
-    return new OrgProjects(results);
+    return new Projects(results);
 });
-exports.fetchOrgProjects = fetchOrgProjects;
-class OrgProjects {
+exports.fetchProjects = fetchProjects;
+class Projects {
     constructor(results) {
         this.results = results;
     }
@@ -95,29 +95,29 @@ class OrgProjects {
         var _a, _b, _c;
         return (_c = (_b = (_a = this.results) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.viewer) === null || _c === void 0 ? void 0 : _c.name;
     }
-    getOrganizationLogin() {
+    getLogin() {
         var _a, _b, _c;
-        return (_c = (_b = (_a = this.results) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.organization) === null || _c === void 0 ? void 0 : _c.login;
+        return (_c = (_b = (_a = this.results) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.entity) === null || _c === void 0 ? void 0 : _c.login;
     }
-    getOrganizationAvatarUrl() {
+    getAvatarUrl() {
         var _a, _b, _c;
-        return (_c = (_b = (_a = this.results) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.organization) === null || _c === void 0 ? void 0 : _c.avatarUrl;
+        return (_c = (_b = (_a = this.results) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.entity) === null || _c === void 0 ? void 0 : _c.avatarUrl;
     }
-    getOrganizationUrl() {
+    getUrl() {
         var _a, _b, _c;
-        return (_c = (_b = (_a = this.results) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.organization) === null || _c === void 0 ? void 0 : _c.url;
+        return (_c = (_b = (_a = this.results) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.entity) === null || _c === void 0 ? void 0 : _c.url;
     }
-    getOrganizationName() {
+    getName() {
         var _a, _b, _c;
-        return (_c = (_b = (_a = this.results) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.organization) === null || _c === void 0 ? void 0 : _c.name;
+        return (_c = (_b = (_a = this.results) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.entity) === null || _c === void 0 ? void 0 : _c.name;
     }
     getProjects() {
         var _a, _b, _c, _d, _e;
-        const edges = (_e = (_d = (_c = (_b = (_a = this.results) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.organization) === null || _c === void 0 ? void 0 : _c.projectsV2) === null || _d === void 0 ? void 0 : _d.edges) !== null && _e !== void 0 ? _e : [];
+        const edges = (_e = (_d = (_c = (_b = (_a = this.results) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.entity) === null || _c === void 0 ? void 0 : _c.projectsV2) === null || _d === void 0 ? void 0 : _d.edges) !== null && _e !== void 0 ? _e : [];
         return edges.map((edge) => new Project(edge.node));
     }
 }
-exports.OrgProjects = OrgProjects;
+exports.Projects = Projects;
 class Project {
     constructor(node) {
         this.node = node;
@@ -140,11 +140,11 @@ class Project {
     }
 }
 exports.Project = Project;
-const fetchProjectItems = (orgName, projectNumber, token, progress) => __awaiter(void 0, void 0, void 0, function* () {
+const fetchProjectItems = (login, isOrg, projectNumber, token, progress) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     const PROJECT_ITEMS_QUERY = (0, client_1.gql) `
     query ProjectQuery(
-      $orgName: String!
+      $login: String!
       $projectNumber: Int!
       $itemsFirst: Int
       $itemsAfter: String
@@ -152,7 +152,7 @@ const fetchProjectItems = (orgName, projectNumber, token, progress) => __awaiter
       $labelsFirst: Int
       $statusFieldName: String!
     ) {
-      organization(login: $orgName) {
+      entity: ${isOrg ? 'organization' : 'user'}(login: $login) {
         projectV2(number: $projectNumber) {
           items(first: $itemsFirst, after: $itemsAfter) {
             totalCount
@@ -194,6 +194,19 @@ const fetchProjectItems = (orgName, projectNumber, token, progress) => __awaiter
                     closedAt
                   }
                   ... on DraftIssue {
+                    title
+                    author: creator {
+                      login
+                      ... on User {
+                        name
+                      }
+                      ... on Organization {
+                        name
+                      }
+                      ... on EnterpriseUserAccount {
+                        name
+                      }
+                    }
                     assignees(first: $assigneesFirst) {
                       nodes {
                         login
@@ -203,6 +216,7 @@ const fetchProjectItems = (orgName, projectNumber, token, progress) => __awaiter
                     body
                   }
                   ... on PullRequest {
+                    title
                     assignees(first: $assigneesFirst) {
                       nodes {
                         name
@@ -214,6 +228,10 @@ const fetchProjectItems = (orgName, projectNumber, token, progress) => __awaiter
                     url
                     number
                     author {
+                      ... on User {
+                        name
+                        login
+                      }
                       ... on Organization {
                         name
                         login
@@ -249,7 +267,7 @@ const fetchProjectItems = (orgName, projectNumber, token, progress) => __awaiter
         queryResults = yield client.query({
             query: PROJECT_ITEMS_QUERY,
             variables: {
-                orgName,
+                login,
                 projectNumber,
                 itemsFirst: 100,
                 itemsAfter,
@@ -258,8 +276,8 @@ const fetchProjectItems = (orgName, projectNumber, token, progress) => __awaiter
                 statusFieldName: 'Status',
             },
         });
-        const totalCount = (_e = (_d = (_c = (_b = (_a = queryResults.data) === null || _a === void 0 ? void 0 : _a.organization) === null || _b === void 0 ? void 0 : _b.projectV2) === null || _c === void 0 ? void 0 : _c.items) === null || _d === void 0 ? void 0 : _d.totalCount) !== null && _e !== void 0 ? _e : 0;
-        const edges = (_k = (_j = (_h = (_g = (_f = queryResults === null || queryResults === void 0 ? void 0 : queryResults.data) === null || _f === void 0 ? void 0 : _f.organization) === null || _g === void 0 ? void 0 : _g.projectV2) === null || _h === void 0 ? void 0 : _h.items) === null || _j === void 0 ? void 0 : _j.edges) !== null && _k !== void 0 ? _k : [];
+        const totalCount = (_e = (_d = (_c = (_b = (_a = queryResults.data) === null || _a === void 0 ? void 0 : _a.entity) === null || _b === void 0 ? void 0 : _b.projectV2) === null || _c === void 0 ? void 0 : _c.items) === null || _d === void 0 ? void 0 : _d.totalCount) !== null && _e !== void 0 ? _e : 0;
+        const edges = (_k = (_j = (_h = (_g = (_f = queryResults === null || queryResults === void 0 ? void 0 : queryResults.data) === null || _f === void 0 ? void 0 : _f.entity) === null || _g === void 0 ? void 0 : _g.projectV2) === null || _h === void 0 ? void 0 : _h.items) === null || _j === void 0 ? void 0 : _j.edges) !== null && _k !== void 0 ? _k : [];
         loadedEdges = [...loadedEdges, ...edges];
         itemsAfter = edges[edges.length - 1].cursor;
         loadedAll = loadedEdges.length === totalCount;

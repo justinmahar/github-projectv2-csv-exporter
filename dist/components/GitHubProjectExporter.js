@@ -18,7 +18,8 @@ exports.exporterPath = '/github-projectv2-csv-exporter/?path=/story/tools-github
  */
 const GitHubProjectExporter = (props) => {
     const [accessToken] = (0, useLocalStorageState_1.useLocalStorageState)('', GitHubProjectExporterSettings_1.EXPORTER_ACCESS_TOKEN_KEY);
-    const [organization] = (0, useLocalStorageState_1.useLocalStorageState)('', GitHubProjectExporterSettings_1.EXPORTER_ORGANIZATION_KEY);
+    const [isOrg] = (0, useLocalStorageState_1.useLocalStorageState)('true', GitHubProjectExporterSettings_1.EXPORTER_IS_ORG_KEY);
+    const [login] = (0, useLocalStorageState_1.useLocalStorageState)('', GitHubProjectExporterSettings_1.EXPORTER_LOGIN_KEY);
     const [includeClosedIssues] = (0, useLocalStorageState_1.useLocalStorageState)('false', GitHubProjectExporterSettings_1.EXPORTER_INCLUDE_CLOSED_ISSUES_KEY);
     const [removeStatusEmojis] = (0, useLocalStorageState_1.useLocalStorageState)('true', GitHubProjectExporterSettings_1.EXPORTER_REMOVE_STATUS_EMOJIS_KEY);
     const [removeTitleEmojis] = (0, useLocalStorageState_1.useLocalStorageState)('false', GitHubProjectExporterSettings_1.EXPORTER_REMOVE_TITLE_EMOJIS_KEY);
@@ -37,8 +38,8 @@ const GitHubProjectExporter = (props) => {
     const [progressCurrent, setProgressCurrent] = react_1.default.useState(0);
     const [progressTotal, setProgressTotal] = react_1.default.useState(0);
     react_1.default.useEffect(() => {
-        if (accessToken && organization && loading) {
-            (0, github_projectv2_api_1.fetchOrgProjects)(organization, accessToken)
+        if (accessToken && login && loading) {
+            (0, github_projectv2_api_1.fetchProjects)(login, isOrg === 'true', accessToken)
                 .then((orgProjects) => {
                 setOrgProjects(orgProjects);
             })
@@ -48,11 +49,11 @@ const GitHubProjectExporter = (props) => {
             })
                 .finally(() => setLoading(false));
         }
-    }, [accessToken, organization, loading]);
+    }, [accessToken, login, loading, isOrg]);
     const handleExportCSV = (project) => {
         var _a, _b;
         const projectNumber = (_a = project.getProjectNumber()) !== null && _a !== void 0 ? _a : -1;
-        if (accessToken && organization && projectNumber >= 0) {
+        if (accessToken && login && projectNumber >= 0) {
             setExporting(true);
             setExportingProjectNumber(projectNumber);
             setProgressCurrent(0);
@@ -79,7 +80,7 @@ const GitHubProjectExporter = (props) => {
             };
             progress(0, (_b = project.getTotalItemCount()) !== null && _b !== void 0 ? _b : 0);
             // END smooth loading progress bar
-            (0, github_projectv2_api_1.fetchProjectItems)(organization, projectNumber, accessToken, progress)
+            (0, github_projectv2_api_1.fetchProjectItems)(login, isOrg === 'true', projectNumber, accessToken, progress)
                 .then((projectItems) => {
                 const dataRows = projectItems
                     .filter((item) => (includeClosedIssues === 'true' ? true : item.getState() !== 'CLOSED'))
@@ -158,7 +159,7 @@ const GitHubProjectExporter = (props) => {
             react_1.default.createElement("td", { valign: "middle" },
                 react_1.default.createElement("div", { className: "d-flex flex-column gap-2" },
                     react_1.default.createElement("div", null,
-                        react_1.default.createElement(react_bootstrap_1.Button, { variant: "primary", onClick: () => handleExportCSV(project), disabled: exporting },
+                        react_1.default.createElement(react_bootstrap_1.Button, { variant: "primary", onClick: () => handleExportCSV(project), disabled: exporting || !project.getTotalItemCount() },
                             currentlyExporting && react_1.default.createElement(react_bootstrap_1.Spinner, { animation: "border", role: "status", size: "sm" }),
                             " Export CSV")),
                     currentlyExporting && (react_1.default.createElement(react_bootstrap_1.ProgressBar, { animated: true, variant: "success", now: loadPercentage, label: `${loadPercentage}%` }))))));
@@ -178,7 +179,7 @@ const GitHubProjectExporter = (props) => {
         const csvExporter = new export_to_csv_1.ExportToCsv(options);
         csvExporter.generateCsv(jsonData);
     };
-    const validSettings = accessToken && organization;
+    const validSettings = accessToken && login;
     const selectedColumnElements = selectedColumnNames.map((col, index) => (react_1.default.createElement(react_bootstrap_1.Badge, { key: `${col}-${index}`, bg: "primary" }, col)));
     return (react_1.default.createElement("div", Object.assign({}, props, { style: Object.assign({}, props.style) }),
         react_1.default.createElement(react_bootstrap_1.Container, null,
@@ -190,10 +191,10 @@ const GitHubProjectExporter = (props) => {
                             react_1.default.createElement("p", { className: "fw-bold mb-0" }, "There were no items to export."))),
                         loadProjectsError && (react_1.default.createElement(react_bootstrap_1.Alert, { variant: "danger", className: "mb-2" },
                             react_1.default.createElement("p", { className: "fw-bold" },
-                                "Could not load projects for organization",
+                                "Could not load projects for",
                                 ' ',
-                                react_1.default.createElement(react_bootstrap_1.Badge, { bg: "danger", className: "font-monospace" }, organization),
-                                ". Please check your access token and organization name."),
+                                react_1.default.createElement(react_bootstrap_1.Badge, { bg: "danger", className: "font-monospace" }, login),
+                                ". Please check your access token and login."),
                             react_1.default.createElement("p", { className: "mb-0 font-monospace small" }, `${loadProjectsError}`))),
                         exportProjectItemsError && (react_1.default.createElement(react_bootstrap_1.Alert, { variant: "danger", className: "mb-2" },
                             react_1.default.createElement("p", { className: "fw-bold" }, "Could not export project."),
@@ -209,9 +210,9 @@ const GitHubProjectExporter = (props) => {
                                     "Add a ",
                                     react_1.default.createElement("span", { className: "fw-bold" }, "GitHub access token"),
                                     ".")),
-                                !organization && (react_1.default.createElement("li", null,
+                                !login && (react_1.default.createElement("li", null,
                                     "Add an ",
-                                    react_1.default.createElement("span", { className: "fw-bold" }, "organization name"),
+                                    react_1.default.createElement("span", { className: "fw-bold" }, "organization or user login"),
                                     "."))),
                             react_1.default.createElement("p", null,
                                 "Just head over to ",
@@ -245,9 +246,9 @@ const GitHubProjectExporter = (props) => {
                                             react_1.default.createElement("th", null, "Value"))),
                                     react_1.default.createElement("tbody", null,
                                         react_1.default.createElement("tr", null,
-                                            react_1.default.createElement("td", null, "Organization"),
+                                            react_1.default.createElement("td", null, isOrg === 'true' ? 'Organization' : 'Username'),
                                             react_1.default.createElement("td", null,
-                                                react_1.default.createElement("code", null, organization))),
+                                                react_1.default.createElement("code", null, login))),
                                         react_1.default.createElement("tr", null,
                                             react_1.default.createElement("td", null, "Include closed issues"),
                                             react_1.default.createElement("td", null,

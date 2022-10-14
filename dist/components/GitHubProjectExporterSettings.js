@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GitHubExporterSettings = exports.settingsPath = exports.EXPORTER_COLUMN_FILTER_TEXT_KEY = exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY = exports.EXPORTER_KNOWN_COLUMNS_DEFAULT = exports.EXPORTER_KNOWN_COLUMNS_KEY = exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY = exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY = exports.EXPORTER_INCLUDE_CLOSED_ISSUES_KEY = exports.EXPORTER_ORGANIZATION_KEY = exports.EXPORTER_ACCESS_TOKEN_KEY = void 0;
+exports.GitHubExporterSettings = exports.settingsPath = exports.EXPORTER_COLUMN_FILTER_TEXT_KEY = exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY = exports.EXPORTER_KNOWN_COLUMNS_DEFAULT = exports.EXPORTER_KNOWN_COLUMNS_KEY = exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY = exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY = exports.EXPORTER_INCLUDE_CLOSED_ISSUES_KEY = exports.EXPORTER_IS_ORG_KEY = exports.EXPORTER_LOGIN_KEY = exports.EXPORTER_ACCESS_TOKEN_KEY = void 0;
 require("bootstrap/dist/css/bootstrap.css");
 const classnames_1 = __importDefault(require("classnames"));
 const react_1 = __importDefault(require("react"));
@@ -23,12 +23,13 @@ const GitHubProjectExporter_1 = require("./GitHubProjectExporter");
 const useLocalStorageState_1 = require("./useLocalStorageState");
 const KEY_PREFIX = `github-projectv2-csv-exporter`;
 exports.EXPORTER_ACCESS_TOKEN_KEY = `${KEY_PREFIX}.token`;
-exports.EXPORTER_ORGANIZATION_KEY = `${KEY_PREFIX}.organization`;
+exports.EXPORTER_LOGIN_KEY = `${KEY_PREFIX}.login`;
+exports.EXPORTER_IS_ORG_KEY = `${KEY_PREFIX}.is-org`;
 exports.EXPORTER_INCLUDE_CLOSED_ISSUES_KEY = `${KEY_PREFIX}.include-closed-issues`;
 exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY = `${KEY_PREFIX}.remove-status-emojis`;
 exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY = `${KEY_PREFIX}.remove-title-emojis`;
 exports.EXPORTER_KNOWN_COLUMNS_KEY = `${KEY_PREFIX}.known-columns`;
-exports.EXPORTER_KNOWN_COLUMNS_DEFAULT = `To Do,In Progress,Done`;
+exports.EXPORTER_KNOWN_COLUMNS_DEFAULT = `Todo,In Progress,Done`;
 exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY = `${KEY_PREFIX}.column-filter-enabled`;
 exports.EXPORTER_COLUMN_FILTER_TEXT_KEY = `${KEY_PREFIX}.column-filter-text`;
 exports.settingsPath = '/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--settings';
@@ -38,7 +39,8 @@ exports.settingsPath = '/github-projectv2-csv-exporter/?path=/story/tools-github
 const GitHubExporterSettings = (_a) => {
     var props = __rest(_a, []);
     const [accessToken, setAccessToken] = (0, useLocalStorageState_1.useLocalStorageState)('', exports.EXPORTER_ACCESS_TOKEN_KEY);
-    const [organization, setOrganization] = (0, useLocalStorageState_1.useLocalStorageState)('', exports.EXPORTER_ORGANIZATION_KEY);
+    const [isOrg, setIsOrg] = (0, useLocalStorageState_1.useLocalStorageState)('true', exports.EXPORTER_IS_ORG_KEY);
+    const [login, setLogin] = (0, useLocalStorageState_1.useLocalStorageState)('', exports.EXPORTER_LOGIN_KEY);
     const [includeClosedIssues, setIncludeClosedIssues] = (0, useLocalStorageState_1.useLocalStorageState)('false', exports.EXPORTER_INCLUDE_CLOSED_ISSUES_KEY);
     const [removeStatusEmojis, setRemoveStatusEmojis] = (0, useLocalStorageState_1.useLocalStorageState)('true', exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY);
     const [removeTitleEmojis, setRemoveTitleEmojis] = (0, useLocalStorageState_1.useLocalStorageState)('false', exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY);
@@ -107,9 +109,11 @@ const GitHubExporterSettings = (_a) => {
                                         react_1.default.createElement(react_bootstrap_1.Badge, { bg: "success" }, "read:user"),
                                         ' ',
                                         react_1.default.createElement(react_bootstrap_1.Badge, { bg: "success" }, "read:project")))),
+                            react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-closed-issues", className: "mb-3" },
+                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "This is an organization", id: "is-org-checkbox", checked: isOrg === 'true', onChange: (e) => setIsOrg(`${e.target.checked}`), className: "user-select-none" })),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-org", className: "mb-4" },
-                                react_1.default.createElement(react_bootstrap_1.Form.Label, { className: "fs-6 mb-0" }, "Organization"),
-                                react_1.default.createElement(react_bootstrap_1.Form.Control, { type: "text", value: organization || '', placeholder: "Enter the organization login name", onChange: (e) => setOrganization(e.target.value) })),
+                                react_1.default.createElement(react_bootstrap_1.Form.Label, { className: "fs-6 mb-0" }, isOrg === 'true' ? 'Organization' : 'Username'),
+                                react_1.default.createElement(react_bootstrap_1.Form.Control, { type: "text", value: login || '', placeholder: "Enter the login", onChange: (e) => setLogin(e.target.value) })),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-closed-issues", className: "mb-3" },
                                 react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "Include closed issues", id: "closed-issues-checkbox", checked: includeClosedIssues === 'true', onChange: (e) => setIncludeClosedIssues(`${e.target.checked}`), className: "user-select-none" })),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-filter-emojis", className: "mb-3" },

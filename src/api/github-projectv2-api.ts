@@ -161,12 +161,15 @@ export const fetchProjectItems = async (
                       login
                       ... on User {
                         name
+                        login
                       }
                       ... on Organization {
                         name
+                        login
                       }
                       ... on EnterpriseUserAccount {
                         name
+                        login
                       }
                     }
                     milestone {
@@ -187,12 +190,15 @@ export const fetchProjectItems = async (
                       login
                       ... on User {
                         name
+                        login
                       }
                       ... on Organization {
                         name
+                        login
                       }
                       ... on EnterpriseUserAccount {
                         name
+                        login
                       }
                     }
                     assignees(first: $assigneesFirst) {
@@ -221,6 +227,10 @@ export const fetchProjectItems = async (
                         login
                       }
                       ... on Organization {
+                        name
+                        login
+                      }
+                      ... on EnterpriseUserAccount {
                         name
                         login
                       }

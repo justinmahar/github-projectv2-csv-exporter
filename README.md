@@ -75,7 +75,7 @@ If you want to fetch the data yourself, you can install this package via npm and
 fetchProjects = async (orgName: string, isOrg: boolean, token: string): Promise<Projects>
 ```
 
-Provide an org or username and the token. The promise will be resolved with an `Projects` instance.
+Provide an org or username and the token. The promise will be resolved with a `Projects` instance.
 
 ##### Example
 

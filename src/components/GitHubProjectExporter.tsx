@@ -2,7 +2,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import emojiRegex from 'emoji-regex';
 import { ExportToCsv } from 'export-to-csv';
 import React from 'react';
-import { Alert, Badge, Button, Card, Col, Container, ProgressBar, Row, Spinner, Table } from 'react-bootstrap';
+import { Alert, Badge, Button, Card, Col, Container, Image, ProgressBar, Row, Spinner, Table } from 'react-bootstrap';
 import { DivProps } from 'react-html-props';
 import { fetchProjects, fetchProjectItems, Projects, Project } from '../api/github-projectv2-api';
 import {
@@ -40,7 +40,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const knownColumns = (knownColumnsText ?? '').split(',').filter((c) => !!c);
   const selectedColumnNames = (columnFilterText ?? '').split(',').filter((c) => !!c);
 
-  const [orgProjects, setOrgProjects] = React.useState<Projects | undefined>(undefined);
+  const [projects, setProjects] = React.useState<Projects | undefined>(undefined);
   const [loadProjectsError, setLoadProjectsError] = React.useState<Error | undefined>(undefined);
   const [exportProjectItemsError, setExportProjectItemsError] = React.useState<Error | undefined>(undefined);
   const [noItemsAlertShown, setNoItemsAlertShown] = React.useState(false);
@@ -55,7 +55,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
     if (accessToken && login && loading) {
       fetchProjects(login, isOrg === 'true', accessToken)
         .then((orgProjects) => {
-          setOrgProjects(orgProjects);
+          setProjects(orgProjects);
         })
         .catch((e) => {
           console.error(e);
@@ -172,9 +172,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
     }
   };
 
-  const projects = orgProjects ? orgProjects.getProjects() : [];
-
-  const projectRows: JSX.Element[] = projects
+  const projectRows: JSX.Element[] = (projects ? projects.getProjects() : [])
     .sort((a, b) => (a.getProjectNumber() ?? 0) - (b.getProjectNumber() ?? 0))
     .map((project, index) => {
       const currentlyExporting = exporting && project.getProjectNumber() === exportingProjectNumber;
@@ -294,6 +292,28 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                     {loading && (
                       <div className="d-flex justify-content-center align-items-center" style={{ height: 120 }}>
                         <Spinner animation="border" role="status" />
+                      </div>
+                    )}
+                    {!loading && projects && (
+                      <div className="d-flex justify-content-between mb-2">
+                        <a href={projects.getUrl() ?? ''}>
+                          <Badge bg="success">
+                            <div className="d-flex align-items-center gap-2">
+                              <Image src={projects.getAvatarUrl() ?? ''} roundedCircle style={{ width: 20 }} />
+                              {projects.getName()}
+                            </div>
+                          </Badge>
+                        </a>
+                        {projects.getLogin() !== projects.getViewerLogin() && (
+                          <a href={projects.getViewerUrl() ?? ''}>
+                            <Badge bg="info">
+                              <div className="d-flex align-items-center gap-2">
+                                <Image src={projects.getViewerAvatarUrl() ?? ''} roundedCircle style={{ width: 20 }} />
+                                {projects.getViewerName()}
+                              </div>
+                            </Badge>
+                          </a>
+                        )}
                       </div>
                     )}
                     {!loading && (

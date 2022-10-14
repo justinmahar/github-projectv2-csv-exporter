@@ -80,7 +80,7 @@ const GitHubExporterSettings = (_a) => {
         react_1.default.createElement(react_bootstrap_1.Container, null,
             react_1.default.createElement(react_bootstrap_1.Row, null,
                 react_1.default.createElement(react_bootstrap_1.Col, null,
-                    react_1.default.createElement("h3", { className: "mt-4" }, "GitHub Project Exporter"),
+                    react_1.default.createElement("h3", { className: "mt-4" }, "GitHub Project CSV Exporter (ProjectV2)"),
                     react_1.default.createElement(react_bootstrap_1.Card, null,
                         react_1.default.createElement(react_bootstrap_1.Card.Header, null, "GitHub Exporter Settings"),
                         react_1.default.createElement(react_bootstrap_1.Card.Body, null,

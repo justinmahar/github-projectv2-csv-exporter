@@ -22,4 +22,3 @@ export default {
 const Template: ComponentStory<typeof GitHubProjectExporter> = (args) => <GitHubProjectExporter {...args} />;
 
 export const Exporter = Template.bind({});
-GitHubProjectExporter.args = {};

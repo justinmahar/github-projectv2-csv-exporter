@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.World = exports.Hello = void 0;
+exports.Settings = void 0;
 /*
  * More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
  * More on component templates: https://storybook.js.org/docs/react/writing-stories/introduction#using-args
@@ -11,17 +11,15 @@ exports.World = exports.Hello = void 0;
  * More on argTypes: https://storybook.js.org/docs/react/api/argtypes
  */
 const react_1 = __importDefault(require("react"));
-const Example_1 = require("../components/Example");
+const GitHubProjectExporterSettings_1 = require("../components/GitHubProjectExporterSettings");
 exports.default = {
-    title: 'Components/Example',
-    component: Example_1.Example,
+    title: 'Tools/GitHub Project Exporter',
+    component: GitHubProjectExporterSettings_1.GitHubExporterSettings,
+    parameters: {
+        controls: {
+            disable: true,
+        },
+    },
 };
-const Template = (args) => react_1.default.createElement(Example_1.Example, Object.assign({}, args));
-exports.Hello = Template.bind({});
-exports.Hello.args = {
-    label: 'Hello',
-};
-exports.World = Template.bind({});
-exports.World.args = {
-    label: 'World',
-};
+const Template = (args) => react_1.default.createElement(GitHubProjectExporterSettings_1.GitHubExporterSettings, Object.assign({}, args));
+exports.Settings = Template.bind({});

@@ -22,4 +22,3 @@ export default {
 const Template: ComponentStory<typeof GitHubExporterSettings> = (args) => <GitHubExporterSettings {...args} />;
 
 export const Settings = Template.bind({});
-Settings.args = {};

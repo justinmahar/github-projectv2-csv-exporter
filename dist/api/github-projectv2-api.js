@@ -173,12 +173,15 @@ const fetchProjectItems = (login, isOrg, projectNumber, token, progress) => __aw
                       login
                       ... on User {
                         name
+                        login
                       }
                       ... on Organization {
                         name
+                        login
                       }
                       ... on EnterpriseUserAccount {
                         name
+                        login
                       }
                     }
                     milestone {
@@ -199,12 +202,15 @@ const fetchProjectItems = (login, isOrg, projectNumber, token, progress) => __aw
                       login
                       ... on User {
                         name
+                        login
                       }
                       ... on Organization {
                         name
+                        login
                       }
                       ... on EnterpriseUserAccount {
                         name
+                        login
                       }
                     }
                     assignees(first: $assigneesFirst) {
@@ -233,6 +239,10 @@ const fetchProjectItems = (login, isOrg, projectNumber, token, progress) => __aw
                         login
                       }
                       ... on Organization {
+                        name
+                        login
+                      }
+                      ... on EnterpriseUserAccount {
                         name
                         login
                       }

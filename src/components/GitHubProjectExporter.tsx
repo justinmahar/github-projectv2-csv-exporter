@@ -50,6 +50,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const [exportingProjectNumber, setExportingProjectNumber] = React.useState(-1);
   const [progressCurrent, setProgressCurrent] = React.useState(0);
   const [progressTotal, setProgressTotal] = React.useState(0);
+  const [showStarMessage, setShowStarMessage] = React.useState(false);
 
   React.useEffect(() => {
     if (accessToken && login && loading) {
@@ -159,6 +160,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
               );
             });
             exportCsv(dataRows, filename);
+            setShowStarMessage(true);
           } else {
             setNoItemsAlertShown(true);
           }
@@ -286,7 +288,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                 </Alert>
               )}
               {validSettings && (
-                <Card className="mb-2">
+                <Card className="mb-0">
                   <Card.Header>Projects</Card.Header>
                   <Card.Body>
                     {loading && (
@@ -351,6 +353,13 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                     </div>
                   </Card.Body>
                 </Card>
+              )}
+              {validSettings && showStarMessage && (
+                <h6 className="text-center text-muted my-2">
+                  If this project helped you, please{' '}
+                  <a href="https://github.com/justinmahar/github-projectv2-csv-exporter/">Star it on GitHub</a> so
+                  others can find it. :)
+                </h6>
               )}
               {validSettings && (
                 <Card className="mb-2">

@@ -153,7 +153,9 @@ const GitHubExporterSettings = (_a) => {
                                                         setEnteredKnownColumn('');
                                                         (_a = knownColumnRef.current) === null || _a === void 0 ? void 0 : _a.focus();
                                                     } }, "Add Status")),
-                                            react_1.default.createElement("div", { className: "d-flex flex-wrap gap-2" }, knownColumnsElements)))),
+                                            react_1.default.createElement("div", { className: "d-flex flex-wrap gap-2 mb-2" }, knownColumnsElements),
+                                            react_1.default.createElement("div", null,
+                                                react_1.default.createElement(react_bootstrap_1.Form.Control, { type: "text", value: knownColumnsText !== null && knownColumnsText !== void 0 ? knownColumnsText : '', placeholder: knownColumnsText ? '' : 'Add a status above', onChange: (e) => setKnownColumnsText(e.target.value), style: { width: 220 } }))))),
                                 react_1.default.createElement(react_bootstrap_1.Form.Text, { className: "text-muted" }, "Optionally, you can add the status names from your project's boards if you'd like to filter your results based on specific statuses. Adding Known Statuses makes it easier to filter using the \"Only include issues in the following statuses\" setting above. Your CSV will also sort cards in the order these known statuses appear.")),
                             react_1.default.createElement("div", { className: "d-flex justify-content-end mt-4" },
                                 react_1.default.createElement("a", { href: GitHubProjectExporter_1.exporterPath },

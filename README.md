@@ -49,6 +49,43 @@ For exporting "classic" GitHub projects (older implementation), you can try usin
 - **🚀 Easy to use**
   - Features a simple and easy to use web UI. Configure once. Click once.
 
+## Installation
+
+```
+npm i github-projectv2-csv-exporter
+```
+
+## Usage
+
+### Via Website
+
+Go here: **[GitHub Project Exporter](https://justinmahar.github.io/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--exporter)**.
+
+### Via `npm`
+
+If you want to fetch the data yourself, you can install this package via npm and use the exported fetch functions.
+
+> Note: Your access token must include the following scopes: `repo`, `read:org`, `read:user`, `read:project`
+
+#### fetchOrgProjects
+
+```ts
+fetchOrgProjects = async (orgName: string, token: string): Promise<OrgProjects>
+```
+
+Provide an org name and the token. The promise will be resolved with an `OrgProjects` instance.
+
+
+#### fetchProjectItems
+
+```ts
+fetchProjectItems = async (orgName: string, projectNumber: number, token: string, progress?: (loaded: number, total: number) => void): Promise<ProjectItem[]>
+```
+
+Provide an org name, project number, and token. Optionally, you can provide a `progress` function that will be called periodically with the number of items loaded, and the total expected.
+
+The promise will be resolved with an array of `ProjectItem` instances.
+
 ## Icon Attribution
 
 Icon by [Twemoji](https://github.com/twitter/twemoji).

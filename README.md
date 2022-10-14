@@ -36,34 +36,18 @@ If you would like to join others in showing support for the development of this 
 
 ## Overview
 
-This section will contain an overview so people can have a high-level understanding of the project.
+This export tool allows you to export GitHub projects (that use the [ProjectV2 API](https://github.blog/changelog/2022-06-23-the-new-github-issues-june-23rd-update/)) as a CSV.
+
+For exporting "classic" GitHub projects (older implementation), you can try using [this exporter by Stephen Wu](https://github.com/wustep/github-project-exporter).
 
 ### Features include:
 
-- **🚀 List your features, use fun [emojis](https://emojipedia.org/search/?q=rocket)**
-  - Give a little more info on each feature or mention benefits.
-
-## Installation
-
-```
-npm i github-projectv2-csv-exporter
-```
-
-## Quick Start
-
-This section will contain a copy/paste example so people can get started quickly.
-
-```jsx
-import { Example } from 'github-projectv2-csv-exporter';
-```
-
-```jsx
-<Example label="Example Component" />
-```
-
-## TypeScript
-
-Type definitions have been included for [TypeScript](https://www.typescriptlang.org/) support.
+- **⬇️ Export all GitHub project cards as a CSV.**
+  - View your GitHub cards in your spreadsheet software of choice.
+- **🎛️ Filter issues by column and open/closed state.**
+  - Only export cards in the columns you specify.
+- **🚀 Easy to use**
+  - Features a simple and easy to use web UI. Configure once. Click once.
 
 ## Icon Attribution
 

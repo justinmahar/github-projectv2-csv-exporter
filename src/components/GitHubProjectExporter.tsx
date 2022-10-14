@@ -256,14 +256,29 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                   <p className="mb-0 font-monospace small">{`${exportProjectItemsError}`}</p>
                 </Alert>
               )}
-              {!accessToken && (
-                <Alert variant="danger" className="mb-2">
-                  Please add a GitHub access token to <a href={settingsPath}>Exporter Settings</a>.
-                </Alert>
-              )}
-              {!organization && (
-                <Alert variant="danger">
-                  Please add an organization name to <a href={settingsPath}>Exporter Settings</a>.
+              {!validSettings && (
+                <Alert variant="primary">
+                  <h4>Welcome!</h4>
+                  <p>
+                    In order to start exporting GitHub project CSVs like it's nobody's business, you first need to do a
+                    little setup in <a href={settingsPath}>Exporter Settings</a>:
+                  </p>
+                  <ul>
+                    {!accessToken && (
+                      <li>
+                        Add a <span className="fw-bold">GitHub access token</span>.
+                      </li>
+                    )}
+                    {!organization && (
+                      <li>
+                        Add an <span className="fw-bold">organization name</span>.
+                      </li>
+                    )}
+                  </ul>
+                  <p>
+                    Just head over to <a href={settingsPath}>settings</a> to get those configured, then come back here
+                    when you're ready.
+                  </p>
                 </Alert>
               )}
               {validSettings && (

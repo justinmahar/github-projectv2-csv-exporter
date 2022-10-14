@@ -227,6 +227,12 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                       </Accordion.Body>
                     </Accordion.Item>
                   </Accordion>
+                  <Form.Text className="text-muted">
+                    Optionally, you can add the status column names from your project's boards if you'd like to filter
+                    your results based on specific columns. Adding Known Columns makes it easier to filter using the
+                    "Only include issues in the following columns" setting above. Your CSV will also sort cards in the
+                    order these known columns appear.
+                  </Form.Text>
                 </Form.Group>
                 <div className="d-flex justify-content-end mt-4">
                   <a href={exporterPath}>

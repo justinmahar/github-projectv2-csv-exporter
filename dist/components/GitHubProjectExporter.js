@@ -17,6 +17,7 @@ exports.exporterPath = '/github-projectv2-csv-exporter/?path=/story/tools-github
  * Use this tool to export issues from a GitHub project as a CSV.
  */
 const GitHubProjectExporter = (props) => {
+    var _a, _b, _c, _d;
     const [accessToken] = (0, useLocalStorageState_1.useLocalStorageState)('', GitHubProjectExporterSettings_1.EXPORTER_ACCESS_TOKEN_KEY);
     const [isOrg] = (0, useLocalStorageState_1.useLocalStorageState)('true', GitHubProjectExporterSettings_1.EXPORTER_IS_ORG_KEY);
     const [login] = (0, useLocalStorageState_1.useLocalStorageState)('', GitHubProjectExporterSettings_1.EXPORTER_LOGIN_KEY);
@@ -28,7 +29,7 @@ const GitHubProjectExporter = (props) => {
     const [knownColumnsText] = (0, useLocalStorageState_1.useLocalStorageState)(GitHubProjectExporterSettings_1.EXPORTER_KNOWN_COLUMNS_DEFAULT, GitHubProjectExporterSettings_1.EXPORTER_KNOWN_COLUMNS_KEY);
     const knownColumns = (knownColumnsText !== null && knownColumnsText !== void 0 ? knownColumnsText : '').split(',').filter((c) => !!c);
     const selectedColumnNames = (columnFilterText !== null && columnFilterText !== void 0 ? columnFilterText : '').split(',').filter((c) => !!c);
-    const [orgProjects, setOrgProjects] = react_1.default.useState(undefined);
+    const [projects, setProjects] = react_1.default.useState(undefined);
     const [loadProjectsError, setLoadProjectsError] = react_1.default.useState(undefined);
     const [exportProjectItemsError, setExportProjectItemsError] = react_1.default.useState(undefined);
     const [noItemsAlertShown, setNoItemsAlertShown] = react_1.default.useState(false);
@@ -41,7 +42,7 @@ const GitHubProjectExporter = (props) => {
         if (accessToken && login && loading) {
             (0, github_projectv2_api_1.fetchProjects)(login, isOrg === 'true', accessToken)
                 .then((orgProjects) => {
-                setOrgProjects(orgProjects);
+                setProjects(orgProjects);
             })
                 .catch((e) => {
                 console.error(e);
@@ -144,8 +145,7 @@ const GitHubProjectExporter = (props) => {
             });
         }
     };
-    const projects = orgProjects ? orgProjects.getProjects() : [];
-    const projectRows = projects
+    const projectRows = (projects ? projects.getProjects() : [])
         .sort((a, b) => { var _a, _b; return ((_a = a.getProjectNumber()) !== null && _a !== void 0 ? _a : 0) - ((_b = b.getProjectNumber()) !== null && _b !== void 0 ? _b : 0); })
         .map((project, index) => {
         var _a;
@@ -223,6 +223,17 @@ const GitHubProjectExporter = (props) => {
                             react_1.default.createElement(react_bootstrap_1.Card.Body, null,
                                 loading && (react_1.default.createElement("div", { className: "d-flex justify-content-center align-items-center", style: { height: 120 } },
                                     react_1.default.createElement(react_bootstrap_1.Spinner, { animation: "border", role: "status" }))),
+                                !loading && projects && (react_1.default.createElement("div", { className: "d-flex justify-content-between mb-2" },
+                                    react_1.default.createElement("a", { href: (_a = projects.getUrl()) !== null && _a !== void 0 ? _a : '' },
+                                        react_1.default.createElement(react_bootstrap_1.Badge, { bg: "success" },
+                                            react_1.default.createElement("div", { className: "d-flex align-items-center gap-2" },
+                                                react_1.default.createElement(react_bootstrap_1.Image, { src: (_b = projects.getAvatarUrl()) !== null && _b !== void 0 ? _b : '', roundedCircle: true, style: { width: 20 } }),
+                                                projects.getName()))),
+                                    projects.getLogin() !== projects.getViewerLogin() && (react_1.default.createElement("a", { href: (_c = projects.getViewerUrl()) !== null && _c !== void 0 ? _c : '' },
+                                        react_1.default.createElement(react_bootstrap_1.Badge, { bg: "info" },
+                                            react_1.default.createElement("div", { className: "d-flex align-items-center gap-2" },
+                                                react_1.default.createElement(react_bootstrap_1.Image, { src: (_d = projects.getViewerAvatarUrl()) !== null && _d !== void 0 ? _d : '', roundedCircle: true, style: { width: 20 } }),
+                                                projects.getViewerName())))))),
                                 !loading && (react_1.default.createElement(react_bootstrap_1.Table, { striped: true, bordered: true, responsive: true },
                                     react_1.default.createElement("thead", null,
                                         react_1.default.createElement("tr", null,

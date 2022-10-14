@@ -72,7 +72,7 @@ If you want to fetch the data yourself, you can install this package via npm and
 #### fetchProjects
 
 ```ts
-fetchProjects = async (orgName: string, isOrg: boolean, token: string): Promise<Projects>
+fetchProjects = async (login: string, isOrg: boolean, token: string): Promise<Projects>
 ```
 
 Provide an org or username and the token. The promise will be resolved with a `Projects` instance.
@@ -96,7 +96,7 @@ fetchProjects('my-org', true, 'abc123mytoken').then((orgProjects) =>
 #### fetchProjectItems
 
 ```ts
-fetchProjectItems = async (orgName: string, isOrg: boolean, projectNumber: number, token: string, progress?: (loaded: number, total: number) => void): Promise<ProjectItem[]>
+fetchProjectItems = async (login: string, isOrg: boolean, projectNumber: number, token: string, progress?: (loaded: number, total: number) => void): Promise<ProjectItem[]>
 ```
 
 Provide an org or username, project number, and token. Optionally, you can provide a `progress` function that will be called periodically with the number of items loaded, and the total expected.

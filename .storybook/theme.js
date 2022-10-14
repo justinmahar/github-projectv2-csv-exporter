@@ -1,7 +1,7 @@
 import { create } from '@storybook/theming';
 import packageJson from '../package.json';
 
-const brandTitle = 'Project Home';
+const brandTitle = 'GitHub Project CSV Exporter';
 const brandUrl = packageJson.homepage;
 const base = 'light'; // 'dark'
 const brandImage = undefined; // `/brand.svg`; // 150x30

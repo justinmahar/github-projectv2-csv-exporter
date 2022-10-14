@@ -1,5 +1,5 @@
 <h2 align="center">
-  🔥 GitHub Project CSV Exporter (ProjectV2)
+  📂 GitHub Project CSV Exporter (ProjectV2)
 </h2>
 <h3 align="center">
   Export an organization's GitHub projects as CSV files. Uses ProjectV2 API.

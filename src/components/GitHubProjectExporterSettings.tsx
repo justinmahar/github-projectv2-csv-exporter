@@ -103,7 +103,7 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
       <Container>
         <Row>
           <Col>
-            <h3 className="mt-4">GitHub Project Exporter</h3>
+            <h3 className="mt-4">GitHub Project CSV Exporter (ProjectV2)</h3>
             <Card>
               <Card.Header>GitHub Exporter Settings</Card.Header>
               <Card.Body>

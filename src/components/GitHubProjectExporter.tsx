@@ -231,7 +231,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
       <Container>
         <Row>
           <Col>
-            <h3 className="mt-4">GitHub Project Exporter</h3>
+            <h3 className="mt-4">GitHub Project CSV Exporter (ProjectV2)</h3>
             <div className="d-flex flex-column gap-3">
               {noItemsAlertShown && (
                 <Alert variant="danger" className="mb-2">
@@ -266,33 +266,35 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                   Please add an organization name to <a href={settingsPath}>Exporter Settings</a>.
                 </Alert>
               )}
-              {validSettings && loading && (
-                <div className="d-flex justify-content-center align-items-center" style={{ height: 150 }}>
-                  <Spinner animation="border" role="status" />
-                </div>
-              )}
-              {validSettings && !loading && (
+              {validSettings && (
                 <Card className="mb-2">
                   <Card.Header>Projects</Card.Header>
                   <Card.Body>
-                    <Table striped bordered responsive>
-                      <thead>
-                        <tr>
-                          <th>Project</th>
-                          <th>Number</th>
-                          <th>Total Items</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {projectRows}
-                        {projectRows.length === 0 && (
+                    {loading && (
+                      <div className="d-flex justify-content-center align-items-center" style={{ height: 120 }}>
+                        <Spinner animation="border" role="status" />
+                      </div>
+                    )}
+                    {!loading && (
+                      <Table striped bordered responsive>
+                        <thead>
                           <tr>
-                            <td colSpan={4}>No projects found.</td>
+                            <th>Project</th>
+                            <th>Number</th>
+                            <th>Total Items</th>
+                            <th>Actions</th>
                           </tr>
-                        )}
-                      </tbody>
-                    </Table>
+                        </thead>
+                        <tbody>
+                          {projectRows}
+                          {projectRows.length === 0 && (
+                            <tr>
+                              <td colSpan={4}>No projects found.</td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </Table>
+                    )}
                     <div className="d-flex justify-content-end">
                       <Button variant="primary" onClick={() => setLoading(true)}>
                         Refresh

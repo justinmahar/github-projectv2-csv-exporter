@@ -342,3 +342,84 @@ export class ProjectItem {
     return this.node?.content?.url;
   }
 }
+
+export const fetchProjectFields = async (
+  login: string,
+  isOrg: boolean,
+  projectNumber: number,
+  token: string,
+  progress?: (loaded: number, total: number) => void,
+): Promise<ProjectField[]> => {
+  const PROJECT_FIELDS_QUERY = gql`
+    query ProjectFieldsQuery(
+      $login: String!
+      $projectNumber: Int!
+      $fieldsFirst: Int
+      $fieldsAfter: String
+    ) {
+      entity: ${isOrg ? 'organization' : 'user'}(login: $login) {
+        projectV2(number: $projectNumber) {
+          fields(first: $fieldsFirst, after: $fieldsAfter) {
+            totalCount
+            edges {
+              cursor
+              node {
+                ... on ProjectV2Field {
+                  id
+                  name
+                }
+                ... on ProjectV2SingleSelectField {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const client = createGQLClient(token);
+  let fieldsAfter = null;
+  let queryResults = undefined;
+  let loadedEdges: { node: object }[] = [];
+  let loadedAll = false;
+  // We can only load 100 at a time. So we use cursors to load all issues.
+  while (!loadedAll) {
+    queryResults = await client.query({
+      query: PROJECT_FIELDS_QUERY,
+      variables: {
+        login,
+        projectNumber,
+        fieldsFirst: 100,
+        fieldsAfter,
+      },
+    });
+    const totalCount = queryResults.data?.entity?.projectV2?.fields?.totalCount ?? 0;
+    const edges: any[] = queryResults?.data?.entity?.projectV2?.fields?.edges ?? [];
+    loadedEdges = [...loadedEdges, ...edges];
+    fieldsAfter = edges[edges.length - 1].cursor;
+    loadedAll = loadedEdges.length === totalCount;
+    // If a progress function was provided, we can call that to update the progress bar.
+    if (progress) {
+      progress(loadedEdges.length, totalCount);
+    }
+  }
+  return loadedEdges.map((edge) => new ProjectField(edge.node));
+};
+
+export class ProjectField {
+  public node: any;
+  constructor(node: any) {
+    this.node = node;
+  }
+
+  public getName(): string | undefined {
+    return this.node?.name;
+  }
+
+  public getId(): string | undefined {
+    return this.node?.id;
+  }
+}

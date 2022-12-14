@@ -4,11 +4,13 @@ import { ExportToCsv } from 'export-to-csv';
 import React from 'react';
 import { Alert, Badge, Button, Card, Col, Container, Image, ProgressBar, Row, Spinner, Table } from 'react-bootstrap';
 import { DivProps } from 'react-html-props';
-import { fetchProjects, fetchProjectItems, Projects, Project } from '../api/github-projectv2-api';
+import { fetchProjectItems, fetchProjects, Project, Projects } from '../api/github-projectv2-api';
 import {
   EXPORTER_ACCESS_TOKEN_KEY,
   EXPORTER_COLUMN_FILTER_ENABLED_KEY,
   EXPORTER_COLUMN_FILTER_TEXT_KEY,
+  EXPORTER_FIELD_FILTER_ENABLED_KEY,
+  EXPORTER_FIELD_FILTER_TEXT_KEY,
   EXPORTER_INCLUDE_CLOSED_ITEMS_KEY,
   EXPORTER_INCLUDE_DRAFT_ISSUES_KEY,
   EXPORTER_INCLUDE_ISSUES_KEY,
@@ -16,6 +18,7 @@ import {
   EXPORTER_IS_ORG_KEY,
   EXPORTER_KNOWN_COLUMNS_DEFAULT,
   EXPORTER_KNOWN_COLUMNS_KEY,
+  EXPORTER_KNOWN_FIELDS_KEY,
   EXPORTER_LOGIN_KEY,
   EXPORTER_REMOVE_STATUS_EMOJIS_KEY,
   EXPORTER_REMOVE_TITLE_EMOJIS_KEY,
@@ -45,6 +48,12 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const [knownColumnsText] = useLocalStorageState(EXPORTER_KNOWN_COLUMNS_DEFAULT, EXPORTER_KNOWN_COLUMNS_KEY);
   const knownColumns = (knownColumnsText ?? '').split(',').filter((c) => !!c);
   const selectedColumnNames = (columnFilterText ?? '').split(',').filter((c) => !!c);
+
+  const [knownFieldsText, setKnownFieldsText] = useLocalStorageState('', EXPORTER_KNOWN_FIELDS_KEY);
+  const [fieldsFilterEnabled, setFieldsFilterEnabled] = useLocalStorageState('true', EXPORTER_FIELD_FILTER_ENABLED_KEY);
+  const [fieldsFilterText, setFieldsFilterText] = useLocalStorageState(knownFieldsText, EXPORTER_FIELD_FILTER_TEXT_KEY);
+  const selectedFieldsNames = (fieldsFilterText ?? '').split(',').filter((c) => !!c);
+  const knownFields = (knownFieldsText ?? '').split(',').filter((c) => !!c);
 
   const [projects, setProjects] = React.useState<Projects | undefined>(undefined);
   const [loadProjectsError, setLoadProjectsError] = React.useState<Error | undefined>(undefined);
@@ -242,6 +251,12 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const selectedColumnElements = selectedColumnNames.map((col, index) => (
     <Badge key={`${col}-${index}`} bg="primary">
       {col}
+    </Badge>
+  ));
+
+  const selectedFieldsElements = selectedFieldsNames.map((field, index) => (
+    <Badge key={`${field}-${index}`} bg="primary">
+      {field}
     </Badge>
   ));
 
@@ -471,6 +486,22 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                               </div>
                             ) : (
                               <Badge bg="primary">Include all statuses</Badge>
+                            )}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Fields included</td>
+                          <td>
+                            {fieldsFilterEnabled === 'true' ? (
+                              <div className="d-flex flex-wrap gap-1">
+                                {selectedFieldsNames.length > 0 ? (
+                                  selectedFieldsElements
+                                ) : (
+                                  <Badge bg="danger">None</Badge>
+                                )}
+                              </div>
+                            ) : (
+                              <Badge bg="primary">Include all fields</Badge>
                             )}
                           </td>
                         </tr>

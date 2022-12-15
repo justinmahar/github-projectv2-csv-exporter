@@ -124,13 +124,31 @@ const GitHubProjectExporter = (props) => {
                             return acc;
                         // custom fields can overwrite pre-added fields; this is intentional
                         return Object.assign(Object.assign({}, acc), { [fieldName]: (_a = fieldVal.getValue()) !== null && _a !== void 0 ? _a : '' });
-                    }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (selectedFieldsNames.includes('Title') && {
+                    }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (selectedFieldsNames.includes('Title') && {
                         Title: (removeTitleEmojis === 'true' ? rawTitle.split((0, emoji_regex_1.default)()).join('') : rawTitle).trim(),
-                    })), { Number: (_c = item.getNumber()) !== null && _c !== void 0 ? _c : '', Status: (removeStatusEmojis === 'true' ? rawStatus.split((0, emoji_regex_1.default)()).join('') : rawStatus).trim() }), (selectedFieldsNames.includes('Assignees') && {
+                    })), (selectedFieldsNames.includes('Number') && {
+                        Number: (_c = item.getNumber()) !== null && _c !== void 0 ? _c : '',
+                    })), { Status: (removeStatusEmojis === 'true' ? rawStatus.split((0, emoji_regex_1.default)()).join('') : rawStatus).trim() }), (selectedFieldsNames.includes('Assignees') && {
                         Assignees: (_e = (_d = item
                             .getAssignees()) === null || _d === void 0 ? void 0 : _d.map((a) => a.name).join(', ')) !== null && _e !== void 0 ? _e : '',
-                    })), { 'Assignee Usernames': (_g = (_f = item
-                            .getAssignees()) === null || _f === void 0 ? void 0 : _f.map((a) => a.login).join(', ')) !== null && _g !== void 0 ? _g : '' }), (selectedFieldsNames.includes('Labels') && { Labels: (_j = (_h = item.getLabels()) === null || _h === void 0 ? void 0 : _h.join(', ')) !== null && _j !== void 0 ? _j : '' })), { URL: (_k = item.getUrl()) !== null && _k !== void 0 ? _k : '' }), (selectedFieldsNames.includes('Milestone') && { Milestone: (_l = item.getMilestone()) !== null && _l !== void 0 ? _l : '' })), { Author: (_o = (_m = item.getAuthor()) === null || _m === void 0 ? void 0 : _m.name) !== null && _o !== void 0 ? _o : '', 'Author Username': (_q = (_p = item.getAuthor()) === null || _p === void 0 ? void 0 : _p.login) !== null && _q !== void 0 ? _q : '', CreatedAt: (_r = item.getCreatedAt()) !== null && _r !== void 0 ? _r : '', UpdatedAt: (_s = item.getUpdatedAt()) !== null && _s !== void 0 ? _s : '', ClosedAt: (_t = item.getClosedAt()) !== null && _t !== void 0 ? _t : '', Type: (_u = item.getType()) !== null && _u !== void 0 ? _u : '', State: (_v = item.getState()) !== null && _v !== void 0 ? _v : '' }));
+                    })), (selectedFieldsNames.includes('Assignee Usernames') && {
+                        'Assignee Usernames': (_g = (_f = item
+                            .getAssignees()) === null || _f === void 0 ? void 0 : _f.map((a) => a.login).join(', ')) !== null && _g !== void 0 ? _g : '',
+                    })), (selectedFieldsNames.includes('Labels') && { Labels: (_j = (_h = item.getLabels()) === null || _h === void 0 ? void 0 : _h.join(', ')) !== null && _j !== void 0 ? _j : '' })), (selectedFieldsNames.includes('URL') && {
+                        URL: (_k = item.getUrl()) !== null && _k !== void 0 ? _k : '',
+                    })), (selectedFieldsNames.includes('Milestone') && { Milestone: (_l = item.getMilestone()) !== null && _l !== void 0 ? _l : '' })), (selectedFieldsNames.includes('Author') && { Author: (_o = (_m = item.getAuthor()) === null || _m === void 0 ? void 0 : _m.name) !== null && _o !== void 0 ? _o : '' })), (selectedFieldsNames.includes('Author Username') && {
+                        'Author Username': (_q = (_p = item.getAuthor()) === null || _p === void 0 ? void 0 : _p.login) !== null && _q !== void 0 ? _q : '',
+                    })), (selectedFieldsNames.includes('CreatedAt') && {
+                        CreatedAt: (_r = item.getCreatedAt()) !== null && _r !== void 0 ? _r : '',
+                    })), (selectedFieldsNames.includes('UpdatedAt') && {
+                        UpdatedAt: (_s = item.getUpdatedAt()) !== null && _s !== void 0 ? _s : '',
+                    })), (selectedFieldsNames.includes('ClosedAt') && {
+                        ClosedAt: (_t = item.getClosedAt()) !== null && _t !== void 0 ? _t : '',
+                    })), (selectedFieldsNames.includes('Type') && {
+                        Type: (_u = item.getType()) !== null && _u !== void 0 ? _u : '',
+                    })), (selectedFieldsNames.includes('State') && {
+                        State: (_v = item.getState()) !== null && _v !== void 0 ? _v : '',
+                    })));
                 });
                 // The en-ZA locale uses YYYY/MM/DD. We then replace all / with -.
                 // See: https://stackoverflow.com/questions/23593052/format-javascript-date-as-yyyy-mm-dd

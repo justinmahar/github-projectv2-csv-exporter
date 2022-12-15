@@ -20,6 +20,22 @@ const react_bootstrap_1 = require("react-bootstrap");
 const github_projectv2_api_1 = require("../api/github-projectv2-api");
 const GitHubProjectExporterSettings_1 = require("./GitHubProjectExporterSettings");
 const useLocalStorageState_1 = require("./useLocalStorageState");
+const EXPORTER_BUILTIN_FIELDS = [
+    'Title',
+    'Number',
+    'Assignees',
+    'Assignee Usernames',
+    'Labels',
+    'URL',
+    'Milestone',
+    'Author',
+    'Author Username',
+    'CreatedAt',
+    'UpdatedAt',
+    'ClosedAt',
+    'Type',
+    'State',
+];
 /**
  * Select which fields are included/excluded from the CSV export
  */
@@ -69,8 +85,11 @@ const GitHubProjectFieldSettings = (_a) => {
         if (accessToken && login && loading) {
             (0, github_projectv2_api_1.fetchProjectFields)(login, isOrg === 'true', 1, accessToken)
                 .then((newProjectFields) => {
-                setProjectFields(newProjectFields);
-                const newKnownFieldsText = newProjectFields.map((f) => f.getName()).join(',');
+                const mergedProjectFields = [
+                    ...new Set([...EXPORTER_BUILTIN_FIELDS, ...newProjectFields.map((f) => { var _a; return (_a = f.getName()) !== null && _a !== void 0 ? _a : ''; })]),
+                ];
+                setProjectFields(mergedProjectFields);
+                const newKnownFieldsText = mergedProjectFields.join(',');
                 setKnownFieldsText(newKnownFieldsText);
                 //toggle all fields enabled - only on first load
                 if (fieldsFilterEnabled === 'false' && fieldsFilterText === '')

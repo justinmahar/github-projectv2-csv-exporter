@@ -10,7 +10,7 @@
     "build": "rm -rf ./dist && tsc",
     "watch": "tsc --watch",
     "test": "echo Tests",
-    "lint": "eslint '*/**/*.{js,jsx,ts,tsx}' --quiet --fix",
+    "lint": "eslint \"*/**/*.{js,jsx,ts,tsx}\" --quiet --fix",
     "start": "npm run storybook",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",

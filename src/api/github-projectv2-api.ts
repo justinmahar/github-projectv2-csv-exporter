@@ -247,6 +247,105 @@ export const fetchProjectItems = async (
                   }
                 }
                 type
+                fieldValues(first: $itemsFirst) {
+                  nodes {
+                    ... on ProjectV2ItemFieldDateValue {
+                      date
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                        ... on ProjectV2IterationField {
+                          name
+                        }
+                        ... on ProjectV2SingleSelectField {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldNumberValue {
+                      number
+                      field {
+                        ... on ProjectV2SingleSelectField {
+                          name
+                        }
+                      }
+                      field {
+                        ... on ProjectV2IterationField {
+                          name
+                        }
+                      }
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldTextValue {
+                      text
+                      field {
+                        ... on ProjectV2SingleSelectField {
+                          name
+                        }
+                      }
+                      field {
+                        ... on ProjectV2IterationField {
+                          name
+                        }
+                      }
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldUserValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      users(first: 10) {
+                        nodes {
+                          name
+                          login
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldLabelValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      labels(first: 20) {
+                        nodes {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldPullRequestValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      pullRequests(first: 10) {
+                        nodes {
+                          number
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldSingleSelectValue {
+                      name
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
               }
               cursor
             }
@@ -290,8 +389,10 @@ export const fetchProjectItems = async (
 
 export class ProjectItem {
   public node: any;
+  public fields: ProjectFieldValue[] = [];
   constructor(node: any) {
     this.node = node;
+    this.fields = node.fieldValues.nodes.map((field: unknown) => new ProjectFieldValue(field));
   }
   public getCreatedAt(): string | undefined {
     return this.node?.createdAt;
@@ -409,6 +510,16 @@ export const fetchProjectFields = async (
   return loadedEdges.map((edge) => new ProjectField(edge.node));
 };
 
+enum ProjectFieldType {
+  ProjectV2ItemFieldDateValue = 'ProjectV2ItemFieldDateValue',
+  ProjectV2ItemFieldLabelValue = 'ProjectV2ItemFieldLabelValue',
+  ProjectV2ItemFieldNumberValue = 'ProjectV2ItemFieldNumberValue',
+  ProjectV2ItemFieldPullRequestValue = 'ProjectV2ItemFieldPullRequestValue',
+  ProjectV2ItemFieldSingleSelectValue = 'ProjectV2ItemFieldSingleSelectValue',
+  ProjectV2ItemFieldTextValue = 'ProjectV2ItemFieldTextValue',
+  ProjectV2ItemFieldUserValue = 'ProjectV2ItemFieldUserValue',
+}
+
 export class ProjectField {
   public node: any;
   constructor(node: any) {
@@ -421,5 +532,40 @@ export class ProjectField {
 
   public getId(): string | undefined {
     return this.node?.id;
+  }
+}
+
+export class ProjectFieldValue {
+  public node: any;
+  public field: ProjectField;
+  constructor(node: any) {
+    this.node = node;
+    this.field = new ProjectField(node.field);
+  }
+
+  public getType(): ProjectFieldType | undefined {
+    return this.node?.__typename as ProjectFieldType;
+  }
+
+  public getValue(): string | number | undefined {
+    // console.log(`${this.field.getName()}`, this.getType());
+    switch (this.getType()) {
+      case ProjectFieldType.ProjectV2ItemFieldDateValue:
+        return this.node?.date;
+      case ProjectFieldType.ProjectV2ItemFieldLabelValue:
+        return this?.node?.labels?.nodes?.map(({ name }: { name: string }) => name)?.join(', ');
+      case ProjectFieldType.ProjectV2ItemFieldNumberValue:
+        return this.node?.number;
+      case ProjectFieldType.ProjectV2ItemFieldPullRequestValue:
+        return this.node?.pullRequests?.nodes?.map(({ number }: { number: number }) => `#${number}`)?.join(', ');
+      case ProjectFieldType.ProjectV2ItemFieldSingleSelectValue:
+        return this.node?.name;
+      case ProjectFieldType.ProjectV2ItemFieldTextValue:
+        return this.node?.text;
+      case ProjectFieldType.ProjectV2ItemFieldUserValue:
+        return this.node?.users?.nodes?.map(({ login }: { login: string }) => login)?.join(', ');
+      default:
+        return this.node?.value;
+    }
   }
 }

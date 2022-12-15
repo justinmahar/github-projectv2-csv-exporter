@@ -344,6 +344,36 @@ export const fetchProjectItems = async (
                         }
                       }
                     }
+                    ... on ProjectV2ItemFieldRepositoryValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      repository {
+                        name
+                      }
+                    }
+                    ... on ProjectV2ItemFieldReviewerValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      reviewers(first: 10) {
+                        nodes {
+                          ... on Mannequin {
+                            login
+                          }
+                          ... on Team {
+                            name
+                          }
+                          ... on User {
+                            login
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -507,7 +537,8 @@ export const fetchProjectFields = async (
       progress(loadedEdges.length, totalCount);
     }
   }
-  return loadedEdges.map((edge) => new ProjectField(edge.node));
+  // Status cannot be modified by user since it is a required field
+  return loadedEdges.map((edge) => new ProjectField(edge.node)).filter((field) => field.getName() !== 'Status');
 };
 
 enum ProjectFieldType {
@@ -518,6 +549,8 @@ enum ProjectFieldType {
   ProjectV2ItemFieldSingleSelectValue = 'ProjectV2ItemFieldSingleSelectValue',
   ProjectV2ItemFieldTextValue = 'ProjectV2ItemFieldTextValue',
   ProjectV2ItemFieldUserValue = 'ProjectV2ItemFieldUserValue',
+  ProjectV2ItemFieldRepositoryValue = 'ProjectV2ItemFieldRepositoryValue',
+  ProjectV2ItemFieldReviewerValue = 'ProjectV2ItemFieldReviewerValue',
 }
 
 export class ProjectField {
@@ -564,6 +597,15 @@ export class ProjectFieldValue {
         return this.node?.text;
       case ProjectFieldType.ProjectV2ItemFieldUserValue:
         return this.node?.users?.nodes?.map(({ login }: { login: string }) => login)?.join(', ');
+      case ProjectFieldType.ProjectV2ItemFieldRepositoryValue:
+        return this.node?.repository?.name;
+      case ProjectFieldType.ProjectV2ItemFieldReviewerValue:
+        return (
+          this.node?.reviewers?.nodes
+            // teams have names, users have logins
+            ?.map(({ login, name }: { login?: string; name?: string }) => login ?? name)
+            ?.join(', ')
+        );
       default:
         return this.node?.value;
     }

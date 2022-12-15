@@ -16,10 +16,6 @@ export interface GitHubExporterProjectSpecificSettings extends DivProps {}
 
 /**
  * Settings for a specific GitHub project
- *
- * notes: fetch project info via API:
- * - project custom fields
- * - use toggle box or something similar to the "Statuses included" from main settings page
  */
 export const GitHubProjectSpecificSettings = ({ ...props }: GitHubExporterProjectSpecificSettings) => {
   const [accessToken] = useLocalStorageState('', EXPORTER_ACCESS_TOKEN_KEY);

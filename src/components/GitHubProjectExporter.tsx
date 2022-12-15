@@ -1,6 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.css';
 import emojiRegex from 'emoji-regex';
-import { ExportToCsv } from 'export-to-csv';
+import { json2csvAsync } from 'json-2-csv';
 import React from 'react';
 import { Alert, Badge, Button, Card, Col, Container, Image, ProgressBar, Row, Spinner, Table } from 'react-bootstrap';
 import { DivProps } from 'react-html-props';
@@ -131,31 +131,46 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
             .map((item) => {
               const rawTitle = item.getTitle() ?? '';
               const rawStatus = item.getStatus() ?? '';
-              return {
-                Title: (removeTitleEmojis === 'true' ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
-                Number: item.getNumber() ?? '',
-                Status: (removeStatusEmojis === 'true' ? rawStatus.split(emojiRegex()).join('') : rawStatus).trim(),
-                Assignees:
-                  item
-                    .getAssignees()
-                    ?.map((a) => a.name)
-                    .join(', ') ?? '',
-                'Assignee Usernames':
-                  item
-                    .getAssignees()
-                    ?.map((a) => a.login)
-                    .join(', ') ?? '',
-                Labels: item.getLabels()?.join(', ') ?? '',
-                URL: item.getUrl() ?? '',
-                Milestone: item.getMilestone() ?? '',
-                Author: item.getAuthor()?.name ?? '',
-                'Author Username': item.getAuthor()?.login ?? '',
-                CreatedAt: item.getCreatedAt() ?? '',
-                UpdatedAt: item.getUpdatedAt() ?? '',
-                ClosedAt: item.getClosedAt() ?? '',
-                Type: item.getType() ?? '',
-                State: item.getState() ?? '',
-              };
+              return item.fields.reduce(
+                (acc, fieldVal) => {
+                  const fieldName = fieldVal.field.getName();
+                  if (!fieldName) return acc;
+                  if (fieldsFilterEnabled === 'true' && !selectedFieldsNames.includes(fieldName)) return acc;
+                  // custom fields should not overwrite known fields
+                  return Object.assign(
+                    {
+                      [fieldName]: fieldVal.getValue() ?? '',
+                    },
+                    acc,
+                  );
+                },
+                {
+                  Title: (removeTitleEmojis === 'true' ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
+                  Number: item.getNumber() ?? '',
+                  Status: (removeStatusEmojis === 'true' ? rawStatus.split(emojiRegex()).join('') : rawStatus).trim(),
+                  Assignees:
+                    item
+                      .getAssignees()
+                      ?.map((a) => a.name)
+                      .join(', ') ?? '',
+                  'Assignee Usernames':
+                    item
+                      .getAssignees()
+                      ?.map((a) => a.login)
+                      .join(', ') ?? '',
+                  Labels: item.getLabels()?.join(', ') ?? '',
+                  URL: item.getUrl() ?? '',
+                  Milestone: item.getMilestone() ?? '',
+                  Author: item.getAuthor()?.name ?? '',
+                  'Author Username': item.getAuthor()?.login ?? '',
+                  CreatedAt: item.getCreatedAt() ?? '',
+                  UpdatedAt: item.getUpdatedAt() ?? '',
+                  ClosedAt: item.getClosedAt() ?? '',
+                  Type: item.getType() ?? '',
+                  State: item.getState() ?? '',
+                  Test: 'test',
+                },
+              );
             });
           // The en-ZA locale uses YYYY/MM/DD. We then replace all / with -.
           // See: https://stackoverflow.com/questions/23593052/format-javascript-date-as-yyyy-mm-dd
@@ -230,20 +245,30 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
       );
     });
 
-  const exportCsv = (jsonData: Record<string, any>, filename: string) => {
-    // https://www.npmjs.com/package/export-to-csv
-    const options = {
-      fieldSeparator: ',',
-      quoteStrings: '"',
-      decimalSeparator: '.',
-      showLabels: true,
-      useTextFile: false,
-      filename,
-      useBom: true,
-      useKeysAsHeaders: true,
-    };
-    const csvExporter = new ExportToCsv(options);
-    csvExporter.generateCsv(jsonData);
+  // adapted from https://stackoverflow.com/a/63965930/8396479
+  const promptDownload = (blob: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(new Blob([blob]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+
+    // Append to html link element page
+    document.body.appendChild(link);
+
+    // Start download
+    link.click();
+
+    // Clean up and remove the link
+    link.parentNode?.removeChild(link);
+  };
+
+  const exportCsv = async (jsonData: { [key: string]: unknown }[], filename: string) => {
+    // https://npm.one/package/json-2-csv
+    const csv = await json2csvAsync(jsonData, {
+      emptyFieldValue: '',
+      excelBOM: true,
+    });
+    promptDownload(new Blob([csv], { type: 'text/csv;charset=utf8;' }), `${filename}.csv`);
   };
 
   const validSettings = accessToken && login;

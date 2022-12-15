@@ -1,7 +1,7 @@
 import React from 'react';
 import { Accordion, Alert, Badge, Button, Form, Spinner } from 'react-bootstrap';
 import { DivProps } from 'react-html-props';
-import { fetchProjectFields, ProjectField } from '../api/github-projectv2-api';
+import { fetchProjectFields } from '../api/github-projectv2-api';
 import {
   EXPORTER_ACCESS_TOKEN_KEY,
   EXPORTER_FIELD_FILTER_ENABLED_KEY,
@@ -11,6 +11,23 @@ import {
   EXPORTER_LOGIN_KEY,
 } from './GitHubProjectExporterSettings';
 import { useLocalStorageState } from './useLocalStorageState';
+
+const EXPORTER_BUILTIN_FIELDS = [
+  'Title',
+  'Number',
+  'Assignees',
+  'Assignee Usernames',
+  'Labels',
+  'URL',
+  'Milestone',
+  'Author',
+  'Author Username',
+  'CreatedAt',
+  'UpdatedAt',
+  'ClosedAt',
+  'Type',
+  'State',
+];
 
 export interface GitHubExporterProjectFieldSettings extends DivProps {}
 
@@ -22,7 +39,7 @@ export const GitHubProjectFieldSettings = ({ ...props }: GitHubExporterProjectFi
   const [isOrg] = useLocalStorageState('true', EXPORTER_IS_ORG_KEY);
   const [login] = useLocalStorageState('', EXPORTER_LOGIN_KEY);
 
-  const [projectFields, setProjectFields] = React.useState<ProjectField[] | undefined>(undefined);
+  const [projectFields, setProjectFields] = React.useState<string[] | undefined>(undefined);
   const [loadProjectFieldsError, setLoadProjectFieldsError] = React.useState<Error | undefined>(undefined);
 
   const [loading, setLoading] = React.useState(true);
@@ -93,8 +110,11 @@ export const GitHubProjectFieldSettings = ({ ...props }: GitHubExporterProjectFi
     if (accessToken && login && loading) {
       fetchProjectFields(login, isOrg === 'true', 1, accessToken)
         .then((newProjectFields) => {
-          setProjectFields(newProjectFields);
-          const newKnownFieldsText = newProjectFields.map((f) => f.getName()).join(',');
+          const mergedProjectFields = [
+            ...new Set([...EXPORTER_BUILTIN_FIELDS, ...newProjectFields.map((f) => f.getName() ?? '')]),
+          ];
+          setProjectFields(mergedProjectFields);
+          const newKnownFieldsText = mergedProjectFields.join(',');
           setKnownFieldsText(newKnownFieldsText);
           //toggle all fields enabled - only on first load
           if (fieldsFilterEnabled === 'false' && fieldsFilterText === '') setFieldsFilterText(newKnownFieldsText);

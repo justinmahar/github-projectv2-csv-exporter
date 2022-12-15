@@ -147,7 +147,9 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                   ...(selectedFieldsNames.includes('Title') && {
                     Title: (removeTitleEmojis === 'true' ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
                   }),
-                  Number: item.getNumber() ?? '',
+                  ...(selectedFieldsNames.includes('Number') && {
+                    Number: item.getNumber() ?? '',
+                  }),
                   Status: (removeStatusEmojis === 'true' ? rawStatus.split(emojiRegex()).join('') : rawStatus).trim(),
                   ...(selectedFieldsNames.includes('Assignees') && {
                     Assignees:
@@ -156,21 +158,37 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                         ?.map((a) => a.name)
                         .join(', ') ?? '',
                   }),
-                  'Assignee Usernames':
-                    item
-                      .getAssignees()
-                      ?.map((a) => a.login)
-                      .join(', ') ?? '',
+                  ...(selectedFieldsNames.includes('Assignee Usernames') && {
+                    'Assignee Usernames':
+                      item
+                        .getAssignees()
+                        ?.map((a) => a.login)
+                        .join(', ') ?? '',
+                  }),
                   ...(selectedFieldsNames.includes('Labels') && { Labels: item.getLabels()?.join(', ') ?? '' }),
-                  URL: item.getUrl() ?? '',
+                  ...(selectedFieldsNames.includes('URL') && {
+                    URL: item.getUrl() ?? '',
+                  }),
                   ...(selectedFieldsNames.includes('Milestone') && { Milestone: item.getMilestone() ?? '' }),
-                  Author: item.getAuthor()?.name ?? '',
-                  'Author Username': item.getAuthor()?.login ?? '',
-                  CreatedAt: item.getCreatedAt() ?? '',
-                  UpdatedAt: item.getUpdatedAt() ?? '',
-                  ClosedAt: item.getClosedAt() ?? '',
-                  Type: item.getType() ?? '',
-                  State: item.getState() ?? '',
+                  ...(selectedFieldsNames.includes('Author') && { Author: item.getAuthor()?.name ?? '' }),
+                  ...(selectedFieldsNames.includes('Author Username') && {
+                    'Author Username': item.getAuthor()?.login ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('CreatedAt') && {
+                    CreatedAt: item.getCreatedAt() ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('UpdatedAt') && {
+                    UpdatedAt: item.getUpdatedAt() ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('ClosedAt') && {
+                    ClosedAt: item.getClosedAt() ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('Type') && {
+                    Type: item.getType() ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('State') && {
+                    State: item.getState() ?? '',
+                  }),
                 },
               );
             });

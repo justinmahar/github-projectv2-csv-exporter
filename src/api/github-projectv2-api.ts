@@ -581,7 +581,6 @@ export class ProjectFieldValue {
   }
 
   public getValue(): string | number | undefined {
-    // console.log(`${this.field.getName()}`, this.getType());
     switch (this.getType()) {
       case ProjectFieldType.ProjectV2ItemFieldDateValue:
         return this.node?.date;

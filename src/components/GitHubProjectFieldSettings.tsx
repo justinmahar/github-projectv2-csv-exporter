@@ -12,12 +12,12 @@ import {
 } from './GitHubProjectExporterSettings';
 import { useLocalStorageState } from './useLocalStorageState';
 
-export interface GitHubExporterProjectSpecificSettings extends DivProps {}
+export interface GitHubExporterProjectFieldSettings extends DivProps {}
 
 /**
- * Settings for a specific GitHub project
+ * Select which fields are included/excluded from the CSV export
  */
-export const GitHubProjectSpecificSettings = ({ ...props }: GitHubExporterProjectSpecificSettings) => {
+export const GitHubProjectFieldSettings = ({ ...props }: GitHubExporterProjectFieldSettings) => {
   const [accessToken] = useLocalStorageState('', EXPORTER_ACCESS_TOKEN_KEY);
   const [isOrg] = useLocalStorageState('true', EXPORTER_IS_ORG_KEY);
   const [login] = useLocalStorageState('', EXPORTER_LOGIN_KEY);
@@ -28,7 +28,10 @@ export const GitHubProjectSpecificSettings = ({ ...props }: GitHubExporterProjec
   const [loading, setLoading] = React.useState(true);
 
   const [knownFieldsText, setKnownFieldsText] = useLocalStorageState('', EXPORTER_KNOWN_FIELDS_KEY);
-  const [fieldsFilterEnabled, setFieldsFilterEnabled] = useLocalStorageState('true', EXPORTER_FIELD_FILTER_ENABLED_KEY);
+  const [fieldsFilterEnabled, setFieldsFilterEnabled] = useLocalStorageState(
+    'false',
+    EXPORTER_FIELD_FILTER_ENABLED_KEY,
+  );
   const [fieldsFilterText, setFieldsFilterText] = useLocalStorageState(knownFieldsText, EXPORTER_FIELD_FILTER_TEXT_KEY);
 
   const [enteredKnownFields, setEnteredKnownFields] = React.useState('');
@@ -87,12 +90,14 @@ export const GitHubProjectSpecificSettings = ({ ...props }: GitHubExporterProjec
   ));
 
   React.useEffect(() => {
-    console.log('GitHubProjectSpecificSettings: useEffect()', accessToken, login, loading);
     if (accessToken && login && loading) {
       fetchProjectFields(login, isOrg === 'true', 1, accessToken)
         .then((newProjectFields) => {
           setProjectFields(newProjectFields);
-          setKnownFieldsText(newProjectFields.map((f) => f.getName()).join(','));
+          const newKnownFieldsText = newProjectFields.map((f) => f.getName()).join(',');
+          setKnownFieldsText(newKnownFieldsText);
+          //toggle all fields enabled - only on first load
+          if (fieldsFilterEnabled === 'false' && fieldsFilterText === '') setFieldsFilterText(newKnownFieldsText);
         })
         .catch((e) => {
           console.error(e);
@@ -191,21 +196,17 @@ export const GitHubProjectSpecificSettings = ({ ...props }: GitHubExporterProjec
               </Accordion.Item>
             </Accordion>
             <Form.Text className="text-muted">
-              Optionally, you can add the field names from your project's boards if you'd like to filter your results
-              based on specific fieldes. Adding Known Fieldes makes it easier to filter using the "Only include issues
-              in the following fieldes" setting above. Your CSV will also sort cards in the order these known fieldes
-              appear.
+              Optionally, you can select the optional fields that will be included as headers in the generated CSV file.
+              Custom fields are fetched from the user/org's active projects.
             </Form.Text>
           </Form.Group>
+          <div className="d-flex justify-content-end">
+            <Button variant="primary" onClick={() => setLoading(true)}>
+              Refresh
+            </Button>
+          </div>
         </>
       )}
-      <Form.Group controlId="project-specific-settings" className="mb-3">
-        <div className="d-flex justify-content-end">
-          <Button variant="primary" onClick={() => setLoading(true)}>
-            Refresh
-          </Button>
-        </div>
-      </Form.Group>
     </div>
   );
 };

@@ -4,7 +4,7 @@ import React from 'react';
 import { Accordion, Badge, Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import { DivProps } from 'react-html-props';
 import { exporterPath } from './GitHubProjectExporter';
-import { GitHubProjectSpecificSettings } from './GitHubProjectSpecificSettings';
+import { GitHubProjectFieldSettings } from './GitHubProjectFieldSettings';
 import { useLocalStorageState } from './useLocalStorageState';
 
 const KEY_PREFIX = `github-projectv2-csv-exporter`;
@@ -291,7 +291,7 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                     these known statuses appear.
                   </Form.Text>
                 </Form.Group>
-                <GitHubProjectSpecificSettings />
+                <GitHubProjectFieldSettings />
 
                 <div className="d-flex justify-content-end mt-4">
                   <a href={exporterPath}>

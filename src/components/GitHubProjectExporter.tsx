@@ -265,7 +265,6 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   };
 
   const exportCsv = async (jsonData: { [key: string]: unknown }[], filename: string) => {
-    console.log('jsonData', jsonData);
     // https://npm.one/package/json-2-csv
     const csv = await json2csvAsync(jsonData, {
       emptyFieldValue: '',

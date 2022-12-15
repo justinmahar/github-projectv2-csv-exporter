@@ -1,5 +1,5 @@
 import React from 'react';
-import { Accordion, Badge, Button, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import { Accordion, Alert, Badge, Button, Form, Spinner } from 'react-bootstrap';
 import { DivProps } from 'react-html-props';
 import { fetchProjectFields, ProjectField } from '../api/github-projectv2-api';
 import {
@@ -90,13 +90,13 @@ export const GitHubProjectSpecificSettings = ({ ...props }: GitHubExporterProjec
     console.log('GitHubProjectSpecificSettings: useEffect()', accessToken, login, loading);
     if (accessToken && login && loading) {
       fetchProjectFields(login, isOrg === 'true', 1, accessToken)
-        .then((projectFields) => {
-          setProjectFields(projectFields);
-          setKnownFieldsText(projectFields.map((f) => f.getName()).join(','));
+        .then((newProjectFields) => {
+          setProjectFields(newProjectFields);
+          setKnownFieldsText(newProjectFields.map((f) => f.getName()).join(','));
         })
         .catch((e) => {
           console.error(e);
-          // setLoadProjectsError(e);
+          setLoadProjectFieldsError(e);
         })
         .finally(() => setLoading(false));
     }
@@ -104,109 +104,108 @@ export const GitHubProjectSpecificSettings = ({ ...props }: GitHubExporterProjec
 
   return (
     <div {...props} style={{ ...props.style }}>
-      <Container>
-        <Row>
-          <Col>
-            <p>GitHub Project Specific Settings</p>
-            {!!loading && (
-              <div className="d-flex justify-content-center align-items-center" style={{ height: 120 }}>
-                <Spinner animation="border" role="status" />
-              </div>
-            )}
-            {!loading && !!projectFields && (
-              <>
-                <Form.Group controlId="fg-fields-filter" className="mb-3">
-                  <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
-                    <Form.Check
-                      label="Include the following fields:"
-                      id="fields-filter-checkbox"
-                      checked={fieldsFilterEnabled === 'true'}
-                      onChange={(e) => setFieldsFilterEnabled(`${e.target.checked}`)}
-                      className="user-select-none"
+      {!!loading && (
+        <div className="d-flex justify-content-center align-items-center" style={{ height: 120 }}>
+          <Spinner animation="border" role="status" />
+        </div>
+      )}
+      {loadProjectFieldsError && (
+        <Alert variant="danger" className="mb-2">
+          <p className="fw-bold">
+            Could not load project fields for{' '}
+            <Badge bg="danger" className="font-monospace">
+              {login}
+            </Badge>
+            . Please check your access token and login.
+          </p>
+          <p className="mb-0 font-monospace small">{`${loadProjectFieldsError}`}</p>
+        </Alert>
+      )}
+      {!loading && !!projectFields && (
+        <>
+          <Form.Group controlId="fg-fields-filter" className="mb-3">
+            <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
+              <Form.Check
+                label="Include the following fields:"
+                id="fields-filter-checkbox"
+                checked={fieldsFilterEnabled === 'true'}
+                onChange={(e) => setFieldsFilterEnabled(`${e.target.checked}`)}
+                className="user-select-none"
+              />
+              <Form.Control
+                type="text"
+                value={fieldsFilterText ?? ''}
+                placeholder={fieldsFilterEnabled !== 'true' ? '' : 'Enter field name'}
+                onChange={(e) => setFieldsFilterText(e.target.value)}
+                style={{ width: 220 }}
+                disabled={fieldsFilterEnabled !== 'true'}
+              />
+            </div>
+            <div className="d-flex flex-wrap gap-2 ms-4">{fieldNameBadgeElements}</div>
+          </Form.Group>
+
+          <Form.Group controlId="known-fields-groups" className="mb-3">
+            <Accordion>
+              <Accordion.Item eventKey="0">
+                <Accordion.Header>
+                  <div className="d-flex gap-2">
+                    Item Fields
+                    <Badge pill bg={projectFields.length > 0 ? 'primary' : 'secondary'}>
+                      {projectFields.length}
+                    </Badge>
+                  </div>
+                </Accordion.Header>
+                <Accordion.Body>
+                  <div className="d-flex flex-wrap gap-2 mb-2">
+                    <Form.Control
+                      ref={knownFieldsRef}
+                      type="text"
+                      value={enteredKnownFields}
+                      placeholder="Enter field name"
+                      onChange={(e) => setEnteredKnownFields(e.target.value)}
+                      autoComplete="off"
+                      style={{ width: 200 }}
                     />
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        addKnownField(enteredKnownFields);
+                        setEnteredKnownFields('');
+                        knownFieldsRef.current?.focus();
+                      }}
+                    >
+                      Add Field
+                    </Button>
+                  </div>
+                  <div className="d-flex flex-wrap gap-2 mb-2">{knownFieldsElements}</div>
+                  <div>
                     <Form.Control
                       type="text"
-                      value={fieldsFilterText ?? ''}
-                      placeholder={fieldsFilterEnabled !== 'true' ? '' : 'Enter field name'}
-                      onChange={(e) => setFieldsFilterText(e.target.value)}
-                      style={{ width: 220 }}
-                      disabled={fieldsFilterEnabled !== 'true'}
+                      value={knownFieldsText ?? ''}
+                      placeholder={knownFieldsText ? '' : 'Add a field above'}
+                      onChange={(e) => setKnownFieldsText(e.target.value)}
+                      style={{ width: 550 }}
                     />
                   </div>
-                  <div className="d-flex flex-wrap gap-2 ms-4">{fieldNameBadgeElements}</div>
-                </Form.Group>
-
-                <Form.Group controlId="known-fields-groups" className="mb-3">
-                  <Accordion>
-                    <Accordion.Item eventKey="0">
-                      <Accordion.Header>
-                        <div className="d-flex gap-2">
-                          Item Fields
-                          <Badge pill bg={projectFields.length > 0 ? 'primary' : 'secondary'}>
-                            {projectFields.length}
-                          </Badge>
-                        </div>
-                      </Accordion.Header>
-                      <Accordion.Body>
-                        <div className="d-flex flex-wrap gap-2 mb-2">
-                          <Form.Control
-                            ref={knownFieldsRef}
-                            type="text"
-                            value={enteredKnownFields}
-                            placeholder="Enter field name"
-                            onChange={(e) => setEnteredKnownFields(e.target.value)}
-                            autoComplete="off"
-                            style={{ width: 200 }}
-                          />
-                          <Button
-                            variant="primary"
-                            onClick={() => {
-                              addKnownField(enteredKnownFields);
-                              setEnteredKnownFields('');
-                              knownFieldsRef.current?.focus();
-                            }}
-                          >
-                            Add Field
-                          </Button>
-                        </div>
-                        <div className="d-flex flex-wrap gap-2 mb-2">{knownFieldsElements}</div>
-                        <div>
-                          <Form.Control
-                            type="text"
-                            value={knownFieldsText ?? ''}
-                            placeholder={knownFieldsText ? '' : 'Add a field above'}
-                            onChange={(e) => setKnownFieldsText(e.target.value)}
-                            style={{ width: 550 }}
-                          />
-                        </div>
-                      </Accordion.Body>
-                    </Accordion.Item>
-                  </Accordion>
-                  <Form.Text className="text-muted">
-                    Optionally, you can add the field names from your project's boards if you'd like to filter your
-                    results based on specific fieldes. Adding Known Fieldes makes it easier to filter using the "Only
-                    include issues in the following fieldes" setting above. Your CSV will also sort cards in the order
-                    these known fieldes appear.
-                  </Form.Text>
-                </Form.Group>
-              </>
-            )}
-            <Form.Group controlId="project-specific-settings" className="mb-3">
-              <div className="d-flex justify-content-end mt-4">
-                <Button
-                  variant="primary"
-                  onClick={async () => {
-                    const res = await fetchProjectFields('crimlog', true, 1, '');
-                    console.log(res);
-                  }}
-                >
-                  Test
-                </Button>
-              </div>
-            </Form.Group>
-          </Col>
-        </Row>
-      </Container>
+                </Accordion.Body>
+              </Accordion.Item>
+            </Accordion>
+            <Form.Text className="text-muted">
+              Optionally, you can add the field names from your project's boards if you'd like to filter your results
+              based on specific fieldes. Adding Known Fieldes makes it easier to filter using the "Only include issues
+              in the following fieldes" setting above. Your CSV will also sort cards in the order these known fieldes
+              appear.
+            </Form.Text>
+          </Form.Group>
+        </>
+      )}
+      <Form.Group controlId="project-specific-settings" className="mb-3">
+        <div className="d-flex justify-content-end">
+          <Button variant="primary" onClick={() => setLoading(true)}>
+            Refresh
+          </Button>
+        </div>
+      </Form.Group>
     </div>
   );
 };

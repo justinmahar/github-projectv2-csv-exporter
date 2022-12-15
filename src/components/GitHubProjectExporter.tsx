@@ -53,7 +53,6 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const [fieldsFilterEnabled, setFieldsFilterEnabled] = useLocalStorageState('true', EXPORTER_FIELD_FILTER_ENABLED_KEY);
   const [fieldsFilterText, setFieldsFilterText] = useLocalStorageState(knownFieldsText, EXPORTER_FIELD_FILTER_TEXT_KEY);
   const selectedFieldsNames = (fieldsFilterText ?? '').split(',').filter((c) => !!c);
-  const knownFields = (knownFieldsText ?? '').split(',').filter((c) => !!c);
 
   const [projects, setProjects] = React.useState<Projects | undefined>(undefined);
   const [loadProjectsError, setLoadProjectsError] = React.useState<Error | undefined>(undefined);
@@ -133,34 +132,38 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
               const rawStatus = item.getStatus() ?? '';
               return item.fields.reduce(
                 (acc, fieldVal) => {
+                  // selected field filtering
                   const fieldName = fieldVal.field.getName();
                   if (!fieldName) return acc;
                   if (fieldsFilterEnabled === 'true' && !selectedFieldsNames.includes(fieldName)) return acc;
-                  // custom fields should not overwrite known fields
-                  return Object.assign(
-                    {
-                      [fieldName]: fieldVal.getValue() ?? '',
-                    },
-                    acc,
-                  );
+                  // custom fields can overwrite pre-added fields; this is intentional
+                  return {
+                    ...acc,
+                    [fieldName]: fieldVal.getValue() ?? '',
+                  };
                 },
                 {
-                  Title: (removeTitleEmojis === 'true' ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
+                  // conditional insert
+                  ...(selectedFieldsNames.includes('Title') && {
+                    Title: (removeTitleEmojis === 'true' ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
+                  }),
                   Number: item.getNumber() ?? '',
                   Status: (removeStatusEmojis === 'true' ? rawStatus.split(emojiRegex()).join('') : rawStatus).trim(),
-                  Assignees:
-                    item
-                      .getAssignees()
-                      ?.map((a) => a.name)
-                      .join(', ') ?? '',
+                  ...(selectedFieldsNames.includes('Assignees') && {
+                    Assignees:
+                      item
+                        .getAssignees()
+                        ?.map((a) => a.name)
+                        .join(', ') ?? '',
+                  }),
                   'Assignee Usernames':
                     item
                       .getAssignees()
                       ?.map((a) => a.login)
                       .join(', ') ?? '',
-                  Labels: item.getLabels()?.join(', ') ?? '',
+                  ...(selectedFieldsNames.includes('Labels') && { Labels: item.getLabels()?.join(', ') ?? '' }),
                   URL: item.getUrl() ?? '',
-                  Milestone: item.getMilestone() ?? '',
+                  ...(selectedFieldsNames.includes('Milestone') && { Milestone: item.getMilestone() ?? '' }),
                   Author: item.getAuthor()?.name ?? '',
                   'Author Username': item.getAuthor()?.login ?? '',
                   CreatedAt: item.getCreatedAt() ?? '',
@@ -168,7 +171,6 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                   ClosedAt: item.getClosedAt() ?? '',
                   Type: item.getType() ?? '',
                   State: item.getState() ?? '',
-                  Test: 'test',
                 },
               );
             });
@@ -247,7 +249,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
 
   // adapted from https://stackoverflow.com/a/63965930/8396479
   const promptDownload = (blob: Blob, filename: string) => {
-    const url = window.URL.createObjectURL(new Blob([blob]));
+    const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', filename);
@@ -263,6 +265,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   };
 
   const exportCsv = async (jsonData: { [key: string]: unknown }[], filename: string) => {
+    console.log('jsonData', jsonData);
     // https://npm.one/package/json-2-csv
     const csv = await json2csvAsync(jsonData, {
       emptyFieldValue: '',

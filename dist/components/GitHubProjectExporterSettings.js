@@ -14,12 +14,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GitHubExporterSettings = exports.settingsPath = exports.EXPORTER_COLUMN_FILTER_TEXT_KEY = exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY = exports.EXPORTER_KNOWN_COLUMNS_DEFAULT = exports.EXPORTER_KNOWN_COLUMNS_KEY = exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY = exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY = exports.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY = exports.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY = exports.EXPORTER_INCLUDE_PULL_REQUESTS_KEY = exports.EXPORTER_INCLUDE_ISSUES_KEY = exports.EXPORTER_IS_ORG_KEY = exports.EXPORTER_LOGIN_KEY = exports.EXPORTER_ACCESS_TOKEN_KEY = void 0;
+exports.GitHubExporterSettings = exports.settingsPath = exports.EXPORTER_FIELD_FILTER_TEXT_KEY = exports.EXPORTER_FIELD_FILTER_ENABLED_KEY = exports.EXPORTER_KNOWN_FIELDS_KEY = exports.EXPORTER_COLUMN_FILTER_TEXT_KEY = exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY = exports.EXPORTER_KNOWN_COLUMNS_DEFAULT = exports.EXPORTER_KNOWN_COLUMNS_KEY = exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY = exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY = exports.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY = exports.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY = exports.EXPORTER_INCLUDE_PULL_REQUESTS_KEY = exports.EXPORTER_INCLUDE_ISSUES_KEY = exports.EXPORTER_IS_ORG_KEY = exports.EXPORTER_LOGIN_KEY = exports.EXPORTER_ACCESS_TOKEN_KEY = void 0;
 require("bootstrap/dist/css/bootstrap.css");
 const classnames_1 = __importDefault(require("classnames"));
 const react_1 = __importDefault(require("react"));
 const react_bootstrap_1 = require("react-bootstrap");
 const GitHubProjectExporter_1 = require("./GitHubProjectExporter");
+const GitHubProjectFieldSettings_1 = require("./GitHubProjectFieldSettings");
 const useLocalStorageState_1 = require("./useLocalStorageState");
 const KEY_PREFIX = `github-projectv2-csv-exporter`;
 exports.EXPORTER_ACCESS_TOKEN_KEY = `${KEY_PREFIX}.token`;
@@ -35,6 +36,9 @@ exports.EXPORTER_KNOWN_COLUMNS_KEY = `${KEY_PREFIX}.known-columns`;
 exports.EXPORTER_KNOWN_COLUMNS_DEFAULT = `Todo,In Progress,Done`;
 exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY = `${KEY_PREFIX}.column-filter-enabled`;
 exports.EXPORTER_COLUMN_FILTER_TEXT_KEY = `${KEY_PREFIX}.column-filter-text`;
+exports.EXPORTER_KNOWN_FIELDS_KEY = `${KEY_PREFIX}.known-fields`;
+exports.EXPORTER_FIELD_FILTER_ENABLED_KEY = `${KEY_PREFIX}.field-filter-enabled`;
+exports.EXPORTER_FIELD_FILTER_TEXT_KEY = `${KEY_PREFIX}.field-filter-text`;
 exports.settingsPath = '/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--settings';
 /**
  * Settings for the GitHub project exporter.
@@ -157,6 +161,7 @@ const GitHubExporterSettings = (_a) => {
                                             react_1.default.createElement("div", null,
                                                 react_1.default.createElement(react_bootstrap_1.Form.Control, { type: "text", value: knownColumnsText !== null && knownColumnsText !== void 0 ? knownColumnsText : '', placeholder: knownColumnsText ? '' : 'Add a status above', onChange: (e) => setKnownColumnsText(e.target.value), style: { width: 220 } }))))),
                                 react_1.default.createElement(react_bootstrap_1.Form.Text, { className: "text-muted" }, "Optionally, you can add the status names from your project's boards if you'd like to filter your results based on specific statuses. Adding Known Statuses makes it easier to filter using the \"Only include issues in the following statuses\" setting above. Your CSV will also sort cards in the order these known statuses appear.")),
+                            react_1.default.createElement(GitHubProjectFieldSettings_1.GitHubProjectFieldSettings, null),
                             react_1.default.createElement("div", { className: "d-flex justify-content-end mt-4" },
                                 react_1.default.createElement("a", { href: GitHubProjectExporter_1.exporterPath },
                                     react_1.default.createElement(react_bootstrap_1.Button, { variant: "primary" }, "Open Exporter"))))))))));

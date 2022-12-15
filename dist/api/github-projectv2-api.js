@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProjectItem = exports.fetchProjectItems = exports.Project = exports.Projects = exports.fetchProjects = exports.createGQLClient = exports.GITHUB_API_URL = void 0;
+exports.ProjectFieldValue = exports.ProjectField = exports.fetchProjectFields = exports.ProjectItem = exports.fetchProjectItems = exports.Project = exports.Projects = exports.fetchProjects = exports.createGQLClient = exports.GITHUB_API_URL = void 0;
 const client_1 = require("@apollo/client");
 const context_1 = require("@apollo/client/link/context");
 // GitHub Auth instructions: https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql
@@ -259,6 +259,135 @@ const fetchProjectItems = (login, isOrg, projectNumber, token, progress) => __aw
                   }
                 }
                 type
+                fieldValues(first: $itemsFirst) {
+                  nodes {
+                    ... on ProjectV2ItemFieldDateValue {
+                      date
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                        ... on ProjectV2IterationField {
+                          name
+                        }
+                        ... on ProjectV2SingleSelectField {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldNumberValue {
+                      number
+                      field {
+                        ... on ProjectV2SingleSelectField {
+                          name
+                        }
+                      }
+                      field {
+                        ... on ProjectV2IterationField {
+                          name
+                        }
+                      }
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldTextValue {
+                      text
+                      field {
+                        ... on ProjectV2SingleSelectField {
+                          name
+                        }
+                      }
+                      field {
+                        ... on ProjectV2IterationField {
+                          name
+                        }
+                      }
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldUserValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      users(first: 10) {
+                        nodes {
+                          name
+                          login
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldLabelValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      labels(first: 20) {
+                        nodes {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldPullRequestValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      pullRequests(first: 10) {
+                        nodes {
+                          number
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldSingleSelectValue {
+                      name
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldRepositoryValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      repository {
+                        name
+                      }
+                    }
+                    ... on ProjectV2ItemFieldReviewerValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      reviewers(first: 10) {
+                        nodes {
+                          ... on Mannequin {
+                            login
+                          }
+                          ... on Team {
+                            name
+                          }
+                          ... on User {
+                            login
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
               }
               cursor
             }
@@ -301,7 +430,9 @@ const fetchProjectItems = (login, isOrg, projectNumber, token, progress) => __aw
 exports.fetchProjectItems = fetchProjectItems;
 class ProjectItem {
     constructor(node) {
+        this.fields = [];
         this.node = node;
+        this.fields = node.fieldValues.nodes.map((field) => new ProjectFieldValue(field));
     }
     getCreatedAt() {
         var _a;
@@ -369,3 +500,126 @@ class ProjectItem {
     }
 }
 exports.ProjectItem = ProjectItem;
+const fetchProjectFields = (login, isOrg, projectNumber, token, progress) => __awaiter(void 0, void 0, void 0, function* () {
+    var _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
+    const PROJECT_FIELDS_QUERY = (0, client_1.gql) `
+    query ProjectFieldsQuery(
+      $login: String!
+      $projectNumber: Int!
+      $fieldsFirst: Int
+      $fieldsAfter: String
+    ) {
+      entity: ${isOrg ? 'organization' : 'user'}(login: $login) {
+        projectV2(number: $projectNumber) {
+          fields(first: $fieldsFirst, after: $fieldsAfter) {
+            totalCount
+            edges {
+              cursor
+              node {
+                ... on ProjectV2Field {
+                  id
+                  name
+                }
+                ... on ProjectV2SingleSelectField {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+    const client = (0, exports.createGQLClient)(token);
+    let fieldsAfter = null;
+    let queryResults = undefined;
+    let loadedEdges = [];
+    let loadedAll = false;
+    // We can only load 100 at a time. So we use cursors to load all issues.
+    while (!loadedAll) {
+        queryResults = yield client.query({
+            query: PROJECT_FIELDS_QUERY,
+            variables: {
+                login,
+                projectNumber,
+                fieldsFirst: 100,
+                fieldsAfter,
+            },
+        });
+        const totalCount = (_q = (_p = (_o = (_m = (_l = queryResults.data) === null || _l === void 0 ? void 0 : _l.entity) === null || _m === void 0 ? void 0 : _m.projectV2) === null || _o === void 0 ? void 0 : _o.fields) === null || _p === void 0 ? void 0 : _p.totalCount) !== null && _q !== void 0 ? _q : 0;
+        const edges = (_v = (_u = (_t = (_s = (_r = queryResults === null || queryResults === void 0 ? void 0 : queryResults.data) === null || _r === void 0 ? void 0 : _r.entity) === null || _s === void 0 ? void 0 : _s.projectV2) === null || _t === void 0 ? void 0 : _t.fields) === null || _u === void 0 ? void 0 : _u.edges) !== null && _v !== void 0 ? _v : [];
+        loadedEdges = [...loadedEdges, ...edges];
+        fieldsAfter = edges[edges.length - 1].cursor;
+        loadedAll = loadedEdges.length === totalCount;
+        // If a progress function was provided, we can call that to update the progress bar.
+        if (progress) {
+            progress(loadedEdges.length, totalCount);
+        }
+    }
+    // Status cannot be modified by user since it is a required field
+    return loadedEdges.map((edge) => new ProjectField(edge.node)).filter((field) => field.getName() !== 'Status');
+});
+exports.fetchProjectFields = fetchProjectFields;
+var ProjectFieldType;
+(function (ProjectFieldType) {
+    ProjectFieldType["ProjectV2ItemFieldDateValue"] = "ProjectV2ItemFieldDateValue";
+    ProjectFieldType["ProjectV2ItemFieldLabelValue"] = "ProjectV2ItemFieldLabelValue";
+    ProjectFieldType["ProjectV2ItemFieldNumberValue"] = "ProjectV2ItemFieldNumberValue";
+    ProjectFieldType["ProjectV2ItemFieldPullRequestValue"] = "ProjectV2ItemFieldPullRequestValue";
+    ProjectFieldType["ProjectV2ItemFieldSingleSelectValue"] = "ProjectV2ItemFieldSingleSelectValue";
+    ProjectFieldType["ProjectV2ItemFieldTextValue"] = "ProjectV2ItemFieldTextValue";
+    ProjectFieldType["ProjectV2ItemFieldUserValue"] = "ProjectV2ItemFieldUserValue";
+    ProjectFieldType["ProjectV2ItemFieldRepositoryValue"] = "ProjectV2ItemFieldRepositoryValue";
+    ProjectFieldType["ProjectV2ItemFieldReviewerValue"] = "ProjectV2ItemFieldReviewerValue";
+})(ProjectFieldType || (ProjectFieldType = {}));
+class ProjectField {
+    constructor(node) {
+        this.node = node;
+    }
+    getName() {
+        var _a;
+        return (_a = this.node) === null || _a === void 0 ? void 0 : _a.name;
+    }
+    getId() {
+        var _a;
+        return (_a = this.node) === null || _a === void 0 ? void 0 : _a.id;
+    }
+}
+exports.ProjectField = ProjectField;
+class ProjectFieldValue {
+    constructor(node) {
+        this.node = node;
+        this.field = new ProjectField(node.field);
+    }
+    getType() {
+        var _a;
+        return (_a = this.node) === null || _a === void 0 ? void 0 : _a.__typename;
+    }
+    getValue() {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y;
+        switch (this.getType()) {
+            case ProjectFieldType.ProjectV2ItemFieldDateValue:
+                return (_a = this.node) === null || _a === void 0 ? void 0 : _a.date;
+            case ProjectFieldType.ProjectV2ItemFieldLabelValue:
+                return (_e = (_d = (_c = (_b = this === null || this === void 0 ? void 0 : this.node) === null || _b === void 0 ? void 0 : _b.labels) === null || _c === void 0 ? void 0 : _c.nodes) === null || _d === void 0 ? void 0 : _d.map(({ name }) => name)) === null || _e === void 0 ? void 0 : _e.join(', ');
+            case ProjectFieldType.ProjectV2ItemFieldNumberValue:
+                return (_f = this.node) === null || _f === void 0 ? void 0 : _f.number;
+            case ProjectFieldType.ProjectV2ItemFieldPullRequestValue:
+                return (_k = (_j = (_h = (_g = this.node) === null || _g === void 0 ? void 0 : _g.pullRequests) === null || _h === void 0 ? void 0 : _h.nodes) === null || _j === void 0 ? void 0 : _j.map(({ number }) => `#${number}`)) === null || _k === void 0 ? void 0 : _k.join(', ');
+            case ProjectFieldType.ProjectV2ItemFieldSingleSelectValue:
+                return (_l = this.node) === null || _l === void 0 ? void 0 : _l.name;
+            case ProjectFieldType.ProjectV2ItemFieldTextValue:
+                return (_m = this.node) === null || _m === void 0 ? void 0 : _m.text;
+            case ProjectFieldType.ProjectV2ItemFieldUserValue:
+                return (_r = (_q = (_p = (_o = this.node) === null || _o === void 0 ? void 0 : _o.users) === null || _p === void 0 ? void 0 : _p.nodes) === null || _q === void 0 ? void 0 : _q.map(({ login }) => login)) === null || _r === void 0 ? void 0 : _r.join(', ');
+            case ProjectFieldType.ProjectV2ItemFieldRepositoryValue:
+                return (_t = (_s = this.node) === null || _s === void 0 ? void 0 : _s.repository) === null || _t === void 0 ? void 0 : _t.name;
+            case ProjectFieldType.ProjectV2ItemFieldReviewerValue:
+                return ((_x = (_w = (_v = (_u = this.node) === null || _u === void 0 ? void 0 : _u.reviewers) === null || _v === void 0 ? void 0 : _v.nodes) === null || _w === void 0 ? void 0 : _w.map(({ login, name }) => login !== null && login !== void 0 ? login : name)) === null || _x === void 0 ? void 0 : _x.join(', '));
+            default:
+                return (_y = this.node) === null || _y === void 0 ? void 0 : _y.value;
+        }
+    }
+}
+exports.ProjectFieldValue = ProjectFieldValue;

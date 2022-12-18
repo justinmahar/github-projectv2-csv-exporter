@@ -54,6 +54,9 @@ export const GitHubProjectFieldSettings = ({ ...props }: GitHubExporterProjectFi
   const [enteredKnownFields, setEnteredKnownFields] = React.useState('');
   const knownFieldsRef = React.useRef<HTMLInputElement>(null);
 
+  const [searchQueue, setSearchQueue] = React.useState<unknown[]>([]);
+  const [searching, setSearching] = React.useState(false);
+
   const selectedFieldsNames = (fieldsFilterText ?? '').split(',').filter((c) => !!c);
   const knownFields = (knownFieldsText ?? '').split(',').filter((c) => !!c);
 
@@ -106,10 +109,44 @@ export const GitHubProjectFieldSettings = ({ ...props }: GitHubExporterProjectFi
     </Badge>
   ));
 
-  React.useEffect(() => {
-    if (accessToken && login && loading) {
-      fetchProjectFields(login, isOrg === 'true', 1, accessToken)
-        .then((newProjectFields) => {
+  const bumpSearchQueue = async function <T>(
+    p: Promise<T>,
+    cb: (err: Error | null, res: T | null) => void,
+  ): Promise<void> {
+    searchQueue.unshift(p);
+    if (searching) return;
+
+    setSearching(true);
+    //we haven't created a resolver, so create one now
+    //when all search queries have resolved, display the latest fulfilled one to the user
+    const results = await (async function waitUntilAllSearchesResolved(): Promise<PromiseSettledResult<T>> {
+      const resolved = await Promise.allSettled<Promise<T>[]>(searchQueue as Promise<T>[]);
+      return resolved.length !== searchQueue.length ? await waitUntilAllSearchesResolved() : resolved[0];
+    })();
+    console.log('resolved all results', results);
+
+    setSearching(false);
+    setSearchQueue([]); //clear searchQueue
+
+    if (results.status === 'rejected') {
+      cb(new Error(results.reason), null);
+    } else {
+      cb(null, results.value);
+    }
+  };
+
+  const loadProjectFields = () => {
+    console.log('GitHubProjectFieldSettings useEffect', login);
+    if (accessToken && login) {
+      setLoading(true);
+      bumpSearchQueue(fetchProjectFields(login, isOrg === 'true', 1, accessToken), (e, newProjectFields) => {
+        console.log('in bumpSearchQueue callback', e, newProjectFields);
+        if (!!e) {
+          console.error(e);
+          setLoadProjectFieldsError(e);
+          setProjectFields(undefined);
+        } else if (!!newProjectFields) {
+          setLoadProjectFieldsError(undefined);
           const mergedProjectFields = [
             ...new Set([...EXPORTER_BUILTIN_FIELDS, ...newProjectFields.map((f) => f.getName() ?? '')]),
           ];
@@ -118,14 +155,12 @@ export const GitHubProjectFieldSettings = ({ ...props }: GitHubExporterProjectFi
           setKnownFieldsText(newKnownFieldsText);
           //toggle all fields enabled - only on first load
           if (fieldsFilterEnabled === 'false' && fieldsFilterText === '') setFieldsFilterText(newKnownFieldsText);
-        })
-        .catch((e) => {
-          console.error(e);
-          setLoadProjectFieldsError(e);
-        })
-        .finally(() => setLoading(false));
+        }
+        setLoading(false);
+      });
     }
-  }, [accessToken, login, loading, isOrg]);
+  };
+  React.useEffect(loadProjectFields, [accessToken, login, isOrg]);
 
   return (
     <div {...props} style={{ ...props.style }}>
@@ -141,7 +176,7 @@ export const GitHubProjectFieldSettings = ({ ...props }: GitHubExporterProjectFi
             <Badge bg="danger" className="font-monospace">
               {login}
             </Badge>
-            . Please check your access token and login.
+            . Double-check the login or reload the page.
           </p>
           <p className="mb-0 font-monospace small">{`${loadProjectFieldsError}`}</p>
         </Alert>
@@ -221,7 +256,7 @@ export const GitHubProjectFieldSettings = ({ ...props }: GitHubExporterProjectFi
             </Form.Text>
           </Form.Group>
           <div className="d-flex justify-content-end">
-            <Button variant="primary" onClick={() => setLoading(true)}>
+            <Button variant="primary" onClick={() => loadProjectFields()}>
               Refresh
             </Button>
           </div>

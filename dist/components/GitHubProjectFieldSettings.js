@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __rest = (this && this.__rest) || function (s, e) {
     var t = {};
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
@@ -52,6 +61,8 @@ const GitHubProjectFieldSettings = (_a) => {
     const [fieldsFilterText, setFieldsFilterText] = (0, useLocalStorageState_1.useLocalStorageState)(knownFieldsText, GitHubProjectExporterSettings_1.EXPORTER_FIELD_FILTER_TEXT_KEY);
     const [enteredKnownFields, setEnteredKnownFields] = react_1.default.useState('');
     const knownFieldsRef = react_1.default.useRef(null);
+    const [searchQueue, setSearchQueue] = react_1.default.useState([]);
+    const [searching, setSearching] = react_1.default.useState(false);
     const selectedFieldsNames = (fieldsFilterText !== null && fieldsFilterText !== void 0 ? fieldsFilterText : '').split(',').filter((c) => !!c);
     const knownFields = (knownFieldsText !== null && knownFieldsText !== void 0 ? knownFieldsText : '').split(',').filter((c) => !!c);
     const addKnownField = (col) => {
@@ -81,27 +92,59 @@ const GitHubProjectFieldSettings = (_a) => {
         react_1.default.createElement("div", { className: "d-flex gap-2 align-items-center" },
             field,
             react_1.default.createElement("span", { className: "fw-bold", style: { cursor: 'pointer', fontSize: '120%' }, onClick: () => deleteKnownField(field) }, "\u00D7")))));
-    react_1.default.useEffect(() => {
-        if (accessToken && login && loading) {
-            (0, github_projectv2_api_1.fetchProjectFields)(login, isOrg === 'true', 1, accessToken)
-                .then((newProjectFields) => {
-                const mergedProjectFields = [
-                    ...new Set([...EXPORTER_BUILTIN_FIELDS, ...newProjectFields.map((f) => { var _a; return (_a = f.getName()) !== null && _a !== void 0 ? _a : ''; })]),
-                ];
-                setProjectFields(mergedProjectFields);
-                const newKnownFieldsText = mergedProjectFields.join(',');
-                setKnownFieldsText(newKnownFieldsText);
-                //toggle all fields enabled - only on first load
-                if (fieldsFilterEnabled === 'false' && fieldsFilterText === '')
-                    setFieldsFilterText(newKnownFieldsText);
-            })
-                .catch((e) => {
-                console.error(e);
-                setLoadProjectFieldsError(e);
-            })
-                .finally(() => setLoading(false));
+    const bumpSearchQueue = function (p, cb) {
+        return __awaiter(this, void 0, void 0, function* () {
+            searchQueue.unshift(p);
+            if (searching)
+                return;
+            setSearching(true);
+            //we haven't created a resolver, so create one now
+            //when all search queries have resolved, display the latest fulfilled one to the user
+            const results = yield (function waitUntilAllSearchesResolved() {
+                return __awaiter(this, void 0, void 0, function* () {
+                    const resolved = yield Promise.allSettled(searchQueue);
+                    return resolved.length !== searchQueue.length ? yield waitUntilAllSearchesResolved() : resolved[0];
+                });
+            })();
+            console.log('resolved all results', results);
+            setSearching(false);
+            setSearchQueue([]); //clear searchQueue
+            if (results.status === 'rejected') {
+                cb(new Error(results.reason), null);
+            }
+            else {
+                cb(null, results.value);
+            }
+        });
+    };
+    const loadProjectFields = () => {
+        console.log('GitHubProjectFieldSettings useEffect', login);
+        if (accessToken && login) {
+            setLoading(true);
+            bumpSearchQueue((0, github_projectv2_api_1.fetchProjectFields)(login, isOrg === 'true', 1, accessToken), (e, newProjectFields) => {
+                console.log('in bumpSearchQueue callback', e, newProjectFields);
+                if (!!e) {
+                    console.error(e);
+                    setLoadProjectFieldsError(e);
+                    setProjectFields(undefined);
+                }
+                else if (!!newProjectFields) {
+                    setLoadProjectFieldsError(undefined);
+                    const mergedProjectFields = [
+                        ...new Set([...EXPORTER_BUILTIN_FIELDS, ...newProjectFields.map((f) => { var _a; return (_a = f.getName()) !== null && _a !== void 0 ? _a : ''; })]),
+                    ];
+                    setProjectFields(mergedProjectFields);
+                    const newKnownFieldsText = mergedProjectFields.join(',');
+                    setKnownFieldsText(newKnownFieldsText);
+                    //toggle all fields enabled - only on first load
+                    if (fieldsFilterEnabled === 'false' && fieldsFilterText === '')
+                        setFieldsFilterText(newKnownFieldsText);
+                }
+                setLoading(false);
+            });
         }
-    }, [accessToken, login, loading, isOrg]);
+    };
+    react_1.default.useEffect(loadProjectFields, [accessToken, login, isOrg]);
     return (react_1.default.createElement("div", Object.assign({}, props, { style: Object.assign({}, props.style) }),
         !!loading && (react_1.default.createElement("div", { className: "d-flex justify-content-center align-items-center", style: { height: 120 } },
             react_1.default.createElement(react_bootstrap_1.Spinner, { animation: "border", role: "status" }))),
@@ -110,7 +153,7 @@ const GitHubProjectFieldSettings = (_a) => {
                 "Could not load project fields for",
                 ' ',
                 react_1.default.createElement(react_bootstrap_1.Badge, { bg: "danger", className: "font-monospace" }, login),
-                ". Please check your access token and login."),
+                ". Double-check the login or reload the page."),
             react_1.default.createElement("p", { className: "mb-0 font-monospace small" }, `${loadProjectFieldsError}`))),
         !loading && !!projectFields && (react_1.default.createElement(react_1.default.Fragment, null,
             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-fields-filter", className: "mb-3" },
@@ -139,6 +182,6 @@ const GitHubProjectFieldSettings = (_a) => {
                                 react_1.default.createElement(react_bootstrap_1.Form.Control, { type: "text", value: knownFieldsText !== null && knownFieldsText !== void 0 ? knownFieldsText : '', placeholder: knownFieldsText ? '' : 'Add a field above', onChange: (e) => setKnownFieldsText(e.target.value), style: { width: 550 } }))))),
                 react_1.default.createElement(react_bootstrap_1.Form.Text, { className: "text-muted" }, "Optionally, you can select the optional fields that will be included as headers in the generated CSV file. Custom fields are fetched from the user/org's active projects.")),
             react_1.default.createElement("div", { className: "d-flex justify-content-end" },
-                react_1.default.createElement(react_bootstrap_1.Button, { variant: "primary", onClick: () => setLoading(true) }, "Refresh"))))));
+                react_1.default.createElement(react_bootstrap_1.Button, { variant: "primary", onClick: () => loadProjectFields() }, "Refresh"))))));
 };
 exports.GitHubProjectFieldSettings = GitHubProjectFieldSettings;

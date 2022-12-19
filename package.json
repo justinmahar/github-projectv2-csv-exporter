@@ -10,7 +10,7 @@
     "build": "rm -rf ./dist && tsc",
     "watch": "tsc --watch",
     "test": "echo Tests",
-    "lint": "eslint '*/**/*.{js,jsx,ts,tsx}' --quiet --fix",
+    "lint": "eslint \"*/**/*.{js,jsx,ts,tsx}\" --quiet --fix",
     "start": "npm run storybook",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
@@ -61,8 +61,8 @@
     "@apollo/client": "^3.7.0",
     "bootstrap": "^5.2.2",
     "emoji-regex": "^10.2.1",
-    "export-to-csv": "^0.2.1",
     "graphql": "^16.6.0",
+    "json-2-csv": "3.18.0",
     "react-bootstrap": "^2.5.0"
   }
 }

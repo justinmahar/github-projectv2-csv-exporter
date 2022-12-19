@@ -1,14 +1,16 @@
 import 'bootstrap/dist/css/bootstrap.css';
 import emojiRegex from 'emoji-regex';
-import { ExportToCsv } from 'export-to-csv';
+import { json2csvAsync } from 'json-2-csv';
 import React from 'react';
 import { Alert, Badge, Button, Card, Col, Container, Image, ProgressBar, Row, Spinner, Table } from 'react-bootstrap';
 import { DivProps } from 'react-html-props';
-import { fetchProjects, fetchProjectItems, Projects, Project } from '../api/github-projectv2-api';
+import { fetchProjectItems, fetchProjects, Project, Projects } from '../api/github-projectv2-api';
 import {
   EXPORTER_ACCESS_TOKEN_KEY,
   EXPORTER_COLUMN_FILTER_ENABLED_KEY,
   EXPORTER_COLUMN_FILTER_TEXT_KEY,
+  EXPORTER_FIELD_FILTER_ENABLED_KEY,
+  EXPORTER_FIELD_FILTER_TEXT_KEY,
   EXPORTER_INCLUDE_CLOSED_ITEMS_KEY,
   EXPORTER_INCLUDE_DRAFT_ISSUES_KEY,
   EXPORTER_INCLUDE_ISSUES_KEY,
@@ -16,6 +18,7 @@ import {
   EXPORTER_IS_ORG_KEY,
   EXPORTER_KNOWN_COLUMNS_DEFAULT,
   EXPORTER_KNOWN_COLUMNS_KEY,
+  EXPORTER_KNOWN_FIELDS_KEY,
   EXPORTER_LOGIN_KEY,
   EXPORTER_REMOVE_STATUS_EMOJIS_KEY,
   EXPORTER_REMOVE_TITLE_EMOJIS_KEY,
@@ -45,6 +48,11 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const [knownColumnsText] = useLocalStorageState(EXPORTER_KNOWN_COLUMNS_DEFAULT, EXPORTER_KNOWN_COLUMNS_KEY);
   const knownColumns = (knownColumnsText ?? '').split(',').filter((c) => !!c);
   const selectedColumnNames = (columnFilterText ?? '').split(',').filter((c) => !!c);
+
+  const [knownFieldsText, setKnownFieldsText] = useLocalStorageState('', EXPORTER_KNOWN_FIELDS_KEY);
+  const [fieldsFilterEnabled, setFieldsFilterEnabled] = useLocalStorageState('true', EXPORTER_FIELD_FILTER_ENABLED_KEY);
+  const [fieldsFilterText, setFieldsFilterText] = useLocalStorageState(knownFieldsText, EXPORTER_FIELD_FILTER_TEXT_KEY);
+  const selectedFieldsNames = (fieldsFilterText ?? '').split(',').filter((c) => !!c);
 
   const [projects, setProjects] = React.useState<Projects | undefined>(undefined);
   const [loadProjectsError, setLoadProjectsError] = React.useState<Error | undefined>(undefined);
@@ -122,31 +130,67 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
             .map((item) => {
               const rawTitle = item.getTitle() ?? '';
               const rawStatus = item.getStatus() ?? '';
-              return {
-                Title: (removeTitleEmojis === 'true' ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
-                Number: item.getNumber() ?? '',
-                Status: (removeStatusEmojis === 'true' ? rawStatus.split(emojiRegex()).join('') : rawStatus).trim(),
-                Assignees:
-                  item
-                    .getAssignees()
-                    ?.map((a) => a.name)
-                    .join(', ') ?? '',
-                'Assignee Usernames':
-                  item
-                    .getAssignees()
-                    ?.map((a) => a.login)
-                    .join(', ') ?? '',
-                Labels: item.getLabels()?.join(', ') ?? '',
-                URL: item.getUrl() ?? '',
-                Milestone: item.getMilestone() ?? '',
-                Author: item.getAuthor()?.name ?? '',
-                'Author Username': item.getAuthor()?.login ?? '',
-                CreatedAt: item.getCreatedAt() ?? '',
-                UpdatedAt: item.getUpdatedAt() ?? '',
-                ClosedAt: item.getClosedAt() ?? '',
-                Type: item.getType() ?? '',
-                State: item.getState() ?? '',
-              };
+              return item.fields.reduce(
+                (acc, fieldVal) => {
+                  // selected field filtering
+                  const fieldName = fieldVal.field.getName();
+                  if (!fieldName) return acc;
+                  if (fieldsFilterEnabled === 'true' && !selectedFieldsNames.includes(fieldName)) return acc;
+                  // custom fields can overwrite pre-added fields; this is intentional
+                  return {
+                    ...acc,
+                    [fieldName]: fieldVal.getValue() ?? '',
+                  };
+                },
+                {
+                  // conditional insert
+                  ...(selectedFieldsNames.includes('Title') && {
+                    Title: (removeTitleEmojis === 'true' ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
+                  }),
+                  ...(selectedFieldsNames.includes('Number') && {
+                    Number: item.getNumber() ?? '',
+                  }),
+                  Status: (removeStatusEmojis === 'true' ? rawStatus.split(emojiRegex()).join('') : rawStatus).trim(),
+                  ...(selectedFieldsNames.includes('Assignees') && {
+                    Assignees:
+                      item
+                        .getAssignees()
+                        ?.map((a) => a.name)
+                        .join(', ') ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('Assignee Usernames') && {
+                    'Assignee Usernames':
+                      item
+                        .getAssignees()
+                        ?.map((a) => a.login)
+                        .join(', ') ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('Labels') && { Labels: item.getLabels()?.join(', ') ?? '' }),
+                  ...(selectedFieldsNames.includes('URL') && {
+                    URL: item.getUrl() ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('Milestone') && { Milestone: item.getMilestone() ?? '' }),
+                  ...(selectedFieldsNames.includes('Author') && { Author: item.getAuthor()?.name ?? '' }),
+                  ...(selectedFieldsNames.includes('Author Username') && {
+                    'Author Username': item.getAuthor()?.login ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('CreatedAt') && {
+                    CreatedAt: item.getCreatedAt() ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('UpdatedAt') && {
+                    UpdatedAt: item.getUpdatedAt() ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('ClosedAt') && {
+                    ClosedAt: item.getClosedAt() ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('Type') && {
+                    Type: item.getType() ?? '',
+                  }),
+                  ...(selectedFieldsNames.includes('State') && {
+                    State: item.getState() ?? '',
+                  }),
+                },
+              );
             });
           // The en-ZA locale uses YYYY/MM/DD. We then replace all / with -.
           // See: https://stackoverflow.com/questions/23593052/format-javascript-date-as-yyyy-mm-dd
@@ -221,20 +265,30 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
       );
     });
 
-  const exportCsv = (jsonData: Record<string, any>, filename: string) => {
-    // https://www.npmjs.com/package/export-to-csv
-    const options = {
-      fieldSeparator: ',',
-      quoteStrings: '"',
-      decimalSeparator: '.',
-      showLabels: true,
-      useTextFile: false,
-      filename,
-      useBom: true,
-      useKeysAsHeaders: true,
-    };
-    const csvExporter = new ExportToCsv(options);
-    csvExporter.generateCsv(jsonData);
+  // adapted from https://stackoverflow.com/a/63965930/8396479
+  const promptDownload = (blob: Blob, filename: string) => {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+
+    // Append to html link element page
+    document.body.appendChild(link);
+
+    // Start download
+    link.click();
+
+    // Clean up and remove the link
+    link.parentNode?.removeChild(link);
+  };
+
+  const exportCsv = async (jsonData: { [key: string]: unknown }[], filename: string) => {
+    // https://npm.one/package/json-2-csv
+    const csv = await json2csvAsync(jsonData, {
+      emptyFieldValue: '',
+      excelBOM: true,
+    });
+    promptDownload(new Blob([csv], { type: 'text/csv;charset=utf8;' }), `${filename}.csv`);
   };
 
   const validSettings = accessToken && login;
@@ -242,6 +296,12 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const selectedColumnElements = selectedColumnNames.map((col, index) => (
     <Badge key={`${col}-${index}`} bg="primary">
       {col}
+    </Badge>
+  ));
+
+  const selectedFieldsElements = selectedFieldsNames.map((field, index) => (
+    <Badge key={`${field}-${index}`} bg="primary">
+      {field}
     </Badge>
   ));
 
@@ -471,6 +531,22 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                               </div>
                             ) : (
                               <Badge bg="primary">Include all statuses</Badge>
+                            )}
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Fields included</td>
+                          <td>
+                            {fieldsFilterEnabled === 'true' ? (
+                              <div className="d-flex flex-wrap gap-1">
+                                {selectedFieldsNames.length > 0 ? (
+                                  selectedFieldsElements
+                                ) : (
+                                  <Badge bg="danger">None</Badge>
+                                )}
+                              </div>
+                            ) : (
+                              <Badge bg="primary">Include all fields</Badge>
                             )}
                           </td>
                         </tr>

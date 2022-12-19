@@ -47,7 +47,7 @@ Projects must exist within the [ProjectV2 API](https://github.blog/changelog/202
 - **⬇️ Export all GitHub project cards as a CSV.**
   - View your GitHub cards in your spreadsheet software of choice.
 - **🎛️ Filter issues by status, customize fields, and exclude closed issues.**
-  - Only export cards with the statuses you specify. Choose custom fields. Don't show closed issues.
+  - Only export cards with the statuses you specify, with options to choose custom fields, or hide closed issues.
 - **🚀 Easy to use**
   - Features a simple and easy to use web UI. Configure once. Click once to export.
 

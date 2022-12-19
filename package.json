@@ -35,12 +35,10 @@
   },
   "devDependencies": {
     "@babel/core": "^7.17.2",
-    "@storybook/addon-actions": "^6.5.7",
-    "@storybook/addon-essentials": "^6.5.7",
-    "@storybook/addon-links": "^6.5.7",
-    "@storybook/builder-webpack5": "^6.5.7",
-    "@storybook/manager-webpack5": "^6.5.7",
-    "@storybook/react": "^6.5.7",
+    "@storybook/addon-actions": "^6.5.13",
+    "@storybook/addon-essentials": "^6.5.13",
+    "@storybook/addon-links": "^6.5.13",
+    "@storybook/react": "^6.5.13",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
     "babel-loader": "^8.2.3",
@@ -50,11 +48,10 @@
     "eslint-plugin-react": "^7.28.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "eslint-plugin-storybook": "^0.5.12",
-    "html-webpack-plugin": "^5.5.0",
-    "lockblocks": "^1.0.9",
+    "lockblocks": "^1.0.10",
     "prettier": "^2.5.1",
     "react-html-props": "^1.0.32",
-    "react-markdown": "^8.0.0",
+    "react-markdown": "^8.0.3",
     "typescript": "^4.5.5"
   },
   "dependencies": {
@@ -64,5 +61,6 @@
     "export-to-csv": "^0.2.1",
     "graphql": "^16.6.0",
     "react-bootstrap": "^2.5.0"
-  }
+  },
+  "coreVersion": "2.2.5"
 }

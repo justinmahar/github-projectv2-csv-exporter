@@ -15,19 +15,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v2
-        with:
-          # If you're using actions/checkout@v2 you must set persist-credentials to false
-          # in most cases for the deployment to work correctly.
-          persist-credentials: false
+        uses: actions/checkout@v3
       - name: Install and Build 🔧
         run: |
-          npm install
+          npm ci
           npm run test
           npm run build-storybook
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: storybook-static # The folder the action should deploy.
+          folder: storybook-static # The folder the action should deploy.
+          on:
+            push:
+              branches:
+                - main
+          permissions:
+            contents: write

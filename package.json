@@ -65,5 +65,5 @@
     "graphql": "^16.6.0",
     "react-bootstrap": "^2.5.0"
   },
-  "coreVersion": "2.2.5"
+  "coreVersion": "2.2.7"
 }

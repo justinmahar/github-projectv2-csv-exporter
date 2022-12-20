@@ -14,6 +14,9 @@ export declare const EXPORTER_KNOWN_COLUMNS_KEY: string;
 export declare const EXPORTER_KNOWN_COLUMNS_DEFAULT = "Todo,In Progress,Done";
 export declare const EXPORTER_COLUMN_FILTER_ENABLED_KEY: string;
 export declare const EXPORTER_COLUMN_FILTER_TEXT_KEY: string;
+export declare const EXPORTER_KNOWN_FIELDS_KEY: string;
+export declare const EXPORTER_FIELD_FILTER_ENABLED_KEY: string;
+export declare const EXPORTER_FIELD_FILTER_TEXT_KEY: string;
 export declare const settingsPath = "/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--settings";
 export interface GitHubExporterSettingsProps extends DivProps {
 }

@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -6,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GitHubProjectExporter = exports.exporterPath = void 0;
 require("bootstrap/dist/css/bootstrap.css");
 const emoji_regex_1 = __importDefault(require("emoji-regex"));
-const export_to_csv_1 = require("export-to-csv");
+const json_2_csv_1 = require("json-2-csv");
 const react_1 = __importDefault(require("react"));
 const react_bootstrap_1 = require("react-bootstrap");
 const github_projectv2_api_1 = require("../api/github-projectv2-api");
@@ -32,6 +41,10 @@ const GitHubProjectExporter = (props) => {
     const [knownColumnsText] = (0, useLocalStorageState_1.useLocalStorageState)(GitHubProjectExporterSettings_1.EXPORTER_KNOWN_COLUMNS_DEFAULT, GitHubProjectExporterSettings_1.EXPORTER_KNOWN_COLUMNS_KEY);
     const knownColumns = (knownColumnsText !== null && knownColumnsText !== void 0 ? knownColumnsText : '').split(',').filter((c) => !!c);
     const selectedColumnNames = (columnFilterText !== null && columnFilterText !== void 0 ? columnFilterText : '').split(',').filter((c) => !!c);
+    const [knownFieldsText, setKnownFieldsText] = (0, useLocalStorageState_1.useLocalStorageState)('', GitHubProjectExporterSettings_1.EXPORTER_KNOWN_FIELDS_KEY);
+    const [fieldsFilterEnabled, setFieldsFilterEnabled] = (0, useLocalStorageState_1.useLocalStorageState)('true', GitHubProjectExporterSettings_1.EXPORTER_FIELD_FILTER_ENABLED_KEY);
+    const [fieldsFilterText, setFieldsFilterText] = (0, useLocalStorageState_1.useLocalStorageState)(knownFieldsText, GitHubProjectExporterSettings_1.EXPORTER_FIELD_FILTER_TEXT_KEY);
+    const selectedFieldsNames = (fieldsFilterText !== null && fieldsFilterText !== void 0 ? fieldsFilterText : '').split(',').filter((c) => !!c);
     const [projects, setProjects] = react_1.default.useState(undefined);
     const [loadProjectsError, setLoadProjectsError] = react_1.default.useState(undefined);
     const [exportProjectItemsError, setExportProjectItemsError] = react_1.default.useState(undefined);
@@ -101,25 +114,41 @@ const GitHubProjectExporter = (props) => {
                     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
                     const rawTitle = (_a = item.getTitle()) !== null && _a !== void 0 ? _a : '';
                     const rawStatus = (_b = item.getStatus()) !== null && _b !== void 0 ? _b : '';
-                    return {
+                    return item.fields.reduce((acc, fieldVal) => {
+                        var _a;
+                        // selected field filtering
+                        const fieldName = fieldVal.field.getName();
+                        if (!fieldName)
+                            return acc;
+                        if (fieldsFilterEnabled === 'true' && !selectedFieldsNames.includes(fieldName))
+                            return acc;
+                        // custom fields can overwrite pre-added fields; this is intentional
+                        return Object.assign(Object.assign({}, acc), { [fieldName]: (_a = fieldVal.getValue()) !== null && _a !== void 0 ? _a : '' });
+                    }, Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (selectedFieldsNames.includes('Title') && {
                         Title: (removeTitleEmojis === 'true' ? rawTitle.split((0, emoji_regex_1.default)()).join('') : rawTitle).trim(),
+                    })), (selectedFieldsNames.includes('Number') && {
                         Number: (_c = item.getNumber()) !== null && _c !== void 0 ? _c : '',
-                        Status: (removeStatusEmojis === 'true' ? rawStatus.split((0, emoji_regex_1.default)()).join('') : rawStatus).trim(),
+                    })), { Status: (removeStatusEmojis === 'true' ? rawStatus.split((0, emoji_regex_1.default)()).join('') : rawStatus).trim() }), (selectedFieldsNames.includes('Assignees') && {
                         Assignees: (_e = (_d = item
                             .getAssignees()) === null || _d === void 0 ? void 0 : _d.map((a) => a.name).join(', ')) !== null && _e !== void 0 ? _e : '',
+                    })), (selectedFieldsNames.includes('Assignee Usernames') && {
                         'Assignee Usernames': (_g = (_f = item
                             .getAssignees()) === null || _f === void 0 ? void 0 : _f.map((a) => a.login).join(', ')) !== null && _g !== void 0 ? _g : '',
-                        Labels: (_j = (_h = item.getLabels()) === null || _h === void 0 ? void 0 : _h.join(', ')) !== null && _j !== void 0 ? _j : '',
+                    })), (selectedFieldsNames.includes('Labels') && { Labels: (_j = (_h = item.getLabels()) === null || _h === void 0 ? void 0 : _h.join(', ')) !== null && _j !== void 0 ? _j : '' })), (selectedFieldsNames.includes('URL') && {
                         URL: (_k = item.getUrl()) !== null && _k !== void 0 ? _k : '',
-                        Milestone: (_l = item.getMilestone()) !== null && _l !== void 0 ? _l : '',
-                        Author: (_o = (_m = item.getAuthor()) === null || _m === void 0 ? void 0 : _m.name) !== null && _o !== void 0 ? _o : '',
+                    })), (selectedFieldsNames.includes('Milestone') && { Milestone: (_l = item.getMilestone()) !== null && _l !== void 0 ? _l : '' })), (selectedFieldsNames.includes('Author') && { Author: (_o = (_m = item.getAuthor()) === null || _m === void 0 ? void 0 : _m.name) !== null && _o !== void 0 ? _o : '' })), (selectedFieldsNames.includes('Author Username') && {
                         'Author Username': (_q = (_p = item.getAuthor()) === null || _p === void 0 ? void 0 : _p.login) !== null && _q !== void 0 ? _q : '',
+                    })), (selectedFieldsNames.includes('CreatedAt') && {
                         CreatedAt: (_r = item.getCreatedAt()) !== null && _r !== void 0 ? _r : '',
+                    })), (selectedFieldsNames.includes('UpdatedAt') && {
                         UpdatedAt: (_s = item.getUpdatedAt()) !== null && _s !== void 0 ? _s : '',
+                    })), (selectedFieldsNames.includes('ClosedAt') && {
                         ClosedAt: (_t = item.getClosedAt()) !== null && _t !== void 0 ? _t : '',
+                    })), (selectedFieldsNames.includes('Type') && {
                         Type: (_u = item.getType()) !== null && _u !== void 0 ? _u : '',
+                    })), (selectedFieldsNames.includes('State') && {
                         State: (_v = item.getState()) !== null && _v !== void 0 ? _v : '',
-                    };
+                    })));
                 });
                 // The en-ZA locale uses YYYY/MM/DD. We then replace all / with -.
                 // See: https://stackoverflow.com/questions/23593052/format-javascript-date-as-yyyy-mm-dd
@@ -176,23 +205,31 @@ const GitHubProjectExporter = (props) => {
                             " Export CSV")),
                     currentlyExporting && (react_1.default.createElement(react_bootstrap_1.ProgressBar, { animated: true, variant: "success", now: loadPercentage, label: `${loadPercentage}%` }))))));
     });
-    const exportCsv = (jsonData, filename) => {
-        // https://www.npmjs.com/package/export-to-csv
-        const options = {
-            fieldSeparator: ',',
-            quoteStrings: '"',
-            decimalSeparator: '.',
-            showLabels: true,
-            useTextFile: false,
-            filename,
-            useBom: true,
-            useKeysAsHeaders: true,
-        };
-        const csvExporter = new export_to_csv_1.ExportToCsv(options);
-        csvExporter.generateCsv(jsonData);
+    // adapted from https://stackoverflow.com/a/63965930/8396479
+    const promptDownload = (blob, filename) => {
+        var _a;
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', filename);
+        // Append to html link element page
+        document.body.appendChild(link);
+        // Start download
+        link.click();
+        // Clean up and remove the link
+        (_a = link.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(link);
     };
+    const exportCsv = (jsonData, filename) => __awaiter(void 0, void 0, void 0, function* () {
+        // https://npm.one/package/json-2-csv
+        const csv = yield (0, json_2_csv_1.json2csvAsync)(jsonData, {
+            emptyFieldValue: '',
+            excelBOM: true,
+        });
+        promptDownload(new Blob([csv], { type: 'text/csv;charset=utf8;' }), `${filename}.csv`);
+    });
     const validSettings = accessToken && login;
     const selectedColumnElements = selectedColumnNames.map((col, index) => (react_1.default.createElement(react_bootstrap_1.Badge, { key: `${col}-${index}`, bg: "primary" }, col)));
+    const selectedFieldsElements = selectedFieldsNames.map((field, index) => (react_1.default.createElement(react_bootstrap_1.Badge, { key: `${field}-${index}`, bg: "primary" }, field)));
     return (react_1.default.createElement("div", Object.assign({}, props, { style: Object.assign({}, props.style) }),
         react_1.default.createElement(react_bootstrap_1.Container, null,
             react_1.default.createElement(react_bootstrap_1.Row, null,
@@ -303,7 +340,10 @@ const GitHubProjectExporter = (props) => {
                                                 react_1.default.createElement(react_bootstrap_1.Badge, { bg: removeTitleEmojis === 'true' ? 'primary' : 'secondary', style: { fontVariant: 'small-caps' } }, removeTitleEmojis === 'true' ? 'yes' : 'no'))),
                                         react_1.default.createElement("tr", null,
                                             react_1.default.createElement("td", null, "Statuses included"),
-                                            react_1.default.createElement("td", null, columnFilterEnabled === 'true' ? (react_1.default.createElement("div", { className: "d-flex flex-wrap gap-1" }, selectedColumnElements.length > 0 ? (selectedColumnElements) : (react_1.default.createElement(react_bootstrap_1.Badge, { bg: "danger" }, "None")))) : (react_1.default.createElement(react_bootstrap_1.Badge, { bg: "primary" }, "Include all statuses")))))),
+                                            react_1.default.createElement("td", null, columnFilterEnabled === 'true' ? (react_1.default.createElement("div", { className: "d-flex flex-wrap gap-1" }, selectedColumnElements.length > 0 ? (selectedColumnElements) : (react_1.default.createElement(react_bootstrap_1.Badge, { bg: "danger" }, "None")))) : (react_1.default.createElement(react_bootstrap_1.Badge, { bg: "primary" }, "Include all statuses")))),
+                                        react_1.default.createElement("tr", null,
+                                            react_1.default.createElement("td", null, "Fields included"),
+                                            react_1.default.createElement("td", null, fieldsFilterEnabled === 'true' ? (react_1.default.createElement("div", { className: "d-flex flex-wrap gap-1" }, selectedFieldsNames.length > 0 ? (selectedFieldsElements) : (react_1.default.createElement(react_bootstrap_1.Badge, { bg: "danger" }, "None")))) : (react_1.default.createElement(react_bootstrap_1.Badge, { bg: "primary" }, "Include all fields")))))),
                                 react_1.default.createElement("div", { className: "d-flex justify-content-end" },
                                     react_1.default.createElement("a", { href: GitHubProjectExporterSettings_1.settingsPath },
                                         react_1.default.createElement(react_bootstrap_1.Button, { variant: "primary" }, "Change Settings"))))))))))));

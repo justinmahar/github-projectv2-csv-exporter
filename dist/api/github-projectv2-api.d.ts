@@ -50,7 +50,11 @@ export declare class ProjectItem {
     getTitle(): string | undefined;
     getUrl(): string | undefined;
 }
-export declare const fetchProjectFields: (login: string, isOrg: boolean, projectNumber: number, token: string, progress?: ((loaded: number, total: number) => void) | undefined) => Promise<ProjectField[]>;
+/**
+ * Fetch all fields across all projects for a given entity (user or org)
+ * constraints: only the first 100 projects per entity and first 100 fields per project are fetched
+ */
+export declare const fetchAllEntityFields: (login: string, isOrg: boolean, token: string) => Promise<ProjectField[]>;
 declare enum ProjectFieldType {
     ProjectV2ItemFieldDateValue = "ProjectV2ItemFieldDateValue",
     ProjectV2ItemFieldLabelValue = "ProjectV2ItemFieldLabelValue",

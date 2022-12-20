@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProjectFieldValue = exports.ProjectField = exports.fetchProjectFields = exports.ProjectItem = exports.fetchProjectItems = exports.Project = exports.Projects = exports.fetchProjects = exports.createGQLClient = exports.GITHUB_API_URL = void 0;
+exports.ProjectFieldValue = exports.ProjectField = exports.fetchAllEntityFields = exports.ProjectItem = exports.fetchProjectItems = exports.Project = exports.Projects = exports.fetchProjects = exports.createGQLClient = exports.GITHUB_API_URL = void 0;
 const client_1 = require("@apollo/client");
 const context_1 = require("@apollo/client/link/context");
 // GitHub Auth instructions: https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql
@@ -500,23 +500,28 @@ class ProjectItem {
     }
 }
 exports.ProjectItem = ProjectItem;
-const fetchProjectFields = (login, isOrg, projectNumber, token, progress) => __awaiter(void 0, void 0, void 0, function* () {
-    var _l, _m, _o, _p, _q, _r, _s, _t, _u, _v;
-    const PROJECT_FIELDS_QUERY = (0, client_1.gql) `
-    query ProjectFieldsQuery(
+/**
+ * Fetch all fields across all projects for a given entity (user or org)
+ * constraints: only the first 100 projects per entity and first 100 fields per project are fetched
+ */
+const fetchAllEntityFields = (login, isOrg, token) => __awaiter(void 0, void 0, void 0, function* () {
+    var _l, _m, _o, _p;
+    const ALL_PROJECT_FIELDS_QUERY = (0, client_1.gql) `
+    query AllEntityFieldsQuery(
       $login: String!
-      $projectNumber: Int!
-      $fieldsFirst: Int
-      $fieldsAfter: String
     ) {
       entity: ${isOrg ? 'organization' : 'user'}(login: $login) {
-        projectV2(number: $projectNumber) {
-          fields(first: $fieldsFirst, after: $fieldsAfter) {
-            totalCount
-            edges {
-              cursor
-              node {
+        projectsV2(first: 100) {
+          totalCount
+          nodes {
+            fields(first: 100) {
+              totalCount
+              nodes {
                 ... on ProjectV2Field {
+                  id
+                  name
+                }
+                ... on ProjectV2IterationField {
                   id
                   name
                 }
@@ -532,35 +537,22 @@ const fetchProjectFields = (login, isOrg, projectNumber, token, progress) => __a
     }
   `;
     const client = (0, exports.createGQLClient)(token);
-    let fieldsAfter = null;
-    let queryResults = undefined;
-    let loadedEdges = [];
-    let loadedAll = false;
-    // We can only load 100 at a time. So we use cursors to load all issues.
-    while (!loadedAll) {
-        queryResults = yield client.query({
-            query: PROJECT_FIELDS_QUERY,
-            variables: {
-                login,
-                projectNumber,
-                fieldsFirst: 100,
-                fieldsAfter,
-            },
-        });
-        const totalCount = (_q = (_p = (_o = (_m = (_l = queryResults.data) === null || _l === void 0 ? void 0 : _l.entity) === null || _m === void 0 ? void 0 : _m.projectV2) === null || _o === void 0 ? void 0 : _o.fields) === null || _p === void 0 ? void 0 : _p.totalCount) !== null && _q !== void 0 ? _q : 0;
-        const edges = (_v = (_u = (_t = (_s = (_r = queryResults === null || queryResults === void 0 ? void 0 : queryResults.data) === null || _r === void 0 ? void 0 : _r.entity) === null || _s === void 0 ? void 0 : _s.projectV2) === null || _t === void 0 ? void 0 : _t.fields) === null || _u === void 0 ? void 0 : _u.edges) !== null && _v !== void 0 ? _v : [];
-        loadedEdges = [...loadedEdges, ...edges];
-        fieldsAfter = edges[edges.length - 1].cursor;
-        loadedAll = loadedEdges.length === totalCount;
-        // If a progress function was provided, we can call that to update the progress bar.
-        if (progress) {
-            progress(loadedEdges.length, totalCount);
-        }
-    }
-    // Status cannot be modified by user since it is a required field
-    return loadedEdges.map((edge) => new ProjectField(edge.node)).filter((field) => field.getName() !== 'Status');
+    const queryResults = yield client.query({
+        query: ALL_PROJECT_FIELDS_QUERY,
+        variables: {
+            login,
+        },
+    });
+    return (_p = (_o = (_m = (_l = queryResults === null || queryResults === void 0 ? void 0 : queryResults.data) === null || _l === void 0 ? void 0 : _l.entity) === null || _m === void 0 ? void 0 : _m.projectsV2) === null || _o === void 0 ? void 0 : _o.nodes) === null || _p === void 0 ? void 0 : _p.reduce((acc, proj) => {
+        var _a, _b, _c, _d;
+        // Status cannot be modified by user since it is a required field
+        return [
+            ...acc,
+            ...((_d = (_c = (_b = (_a = proj === null || proj === void 0 ? void 0 : proj.fields) === null || _a === void 0 ? void 0 : _a.nodes) === null || _b === void 0 ? void 0 : _b.map((field) => new ProjectField(field))) === null || _c === void 0 ? void 0 : _c.filter((field) => field.getName() !== 'Status')) !== null && _d !== void 0 ? _d : []),
+        ];
+    }, []);
 });
-exports.fetchProjectFields = fetchProjectFields;
+exports.fetchAllEntityFields = fetchAllEntityFields;
 var ProjectFieldType;
 (function (ProjectFieldType) {
     ProjectFieldType["ProjectV2ItemFieldDateValue"] = "ProjectV2ItemFieldDateValue";

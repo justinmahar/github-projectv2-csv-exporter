@@ -247,6 +247,135 @@ export const fetchProjectItems = async (
                   }
                 }
                 type
+                fieldValues(first: $itemsFirst) {
+                  nodes {
+                    ... on ProjectV2ItemFieldDateValue {
+                      date
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                        ... on ProjectV2IterationField {
+                          name
+                        }
+                        ... on ProjectV2SingleSelectField {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldNumberValue {
+                      number
+                      field {
+                        ... on ProjectV2SingleSelectField {
+                          name
+                        }
+                      }
+                      field {
+                        ... on ProjectV2IterationField {
+                          name
+                        }
+                      }
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldTextValue {
+                      text
+                      field {
+                        ... on ProjectV2SingleSelectField {
+                          name
+                        }
+                      }
+                      field {
+                        ... on ProjectV2IterationField {
+                          name
+                        }
+                      }
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldUserValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      users(first: 10) {
+                        nodes {
+                          name
+                          login
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldLabelValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      labels(first: 20) {
+                        nodes {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldPullRequestValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      pullRequests(first: 10) {
+                        nodes {
+                          number
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldSingleSelectValue {
+                      name
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                    }
+                    ... on ProjectV2ItemFieldRepositoryValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      repository {
+                        name
+                      }
+                    }
+                    ... on ProjectV2ItemFieldReviewerValue {
+                      field {
+                        ... on ProjectV2Field {
+                          name
+                        }
+                      }
+                      reviewers(first: 10) {
+                        nodes {
+                          ... on Mannequin {
+                            login
+                          }
+                          ... on Team {
+                            name
+                          }
+                          ... on User {
+                            login
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
               }
               cursor
             }
@@ -290,8 +419,10 @@ export const fetchProjectItems = async (
 
 export class ProjectItem {
   public node: any;
+  public fields: ProjectFieldValue[] = [];
   constructor(node: any) {
     this.node = node;
+    this.fields = node.fieldValues.nodes.map((field: unknown) => new ProjectFieldValue(field));
   }
   public getCreatedAt(): string | undefined {
     return this.node?.createdAt;
@@ -340,5 +471,133 @@ export class ProjectItem {
   }
   public getUrl(): string | undefined {
     return this.node?.content?.url;
+  }
+}
+
+/**
+ * Fetch all fields across all projects for a given entity (user or org)
+ * constraints: only the first 100 projects per entity and first 100 fields per project are fetched
+ */
+export const fetchAllEntityFields = async (login: string, isOrg: boolean, token: string): Promise<ProjectField[]> => {
+  const ALL_PROJECT_FIELDS_QUERY = gql`
+    query AllEntityFieldsQuery(
+      $login: String!
+    ) {
+      entity: ${isOrg ? 'organization' : 'user'}(login: $login) {
+        projectsV2(first: 100) {
+          totalCount
+          nodes {
+            fields(first: 100) {
+              totalCount
+              nodes {
+                ... on ProjectV2Field {
+                  id
+                  name
+                }
+                ... on ProjectV2IterationField {
+                  id
+                  name
+                }
+                ... on ProjectV2SingleSelectField {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const client = createGQLClient(token);
+  const queryResults = await client.query({
+    query: ALL_PROJECT_FIELDS_QUERY,
+    variables: {
+      login,
+    },
+  });
+
+  return queryResults?.data?.entity?.projectsV2?.nodes?.reduce(
+    (acc: ProjectField[], proj: { fields?: { nodes?: [] } }) => {
+      // Status cannot be modified by user since it is a required field
+      return [
+        ...acc,
+        ...(proj?.fields?.nodes
+          ?.map((field) => new ProjectField(field))
+          ?.filter((field) => field.getName() !== 'Status') ?? []),
+      ];
+    },
+    [],
+  );
+};
+
+enum ProjectFieldType {
+  ProjectV2ItemFieldDateValue = 'ProjectV2ItemFieldDateValue',
+  ProjectV2ItemFieldLabelValue = 'ProjectV2ItemFieldLabelValue',
+  ProjectV2ItemFieldNumberValue = 'ProjectV2ItemFieldNumberValue',
+  ProjectV2ItemFieldPullRequestValue = 'ProjectV2ItemFieldPullRequestValue',
+  ProjectV2ItemFieldSingleSelectValue = 'ProjectV2ItemFieldSingleSelectValue',
+  ProjectV2ItemFieldTextValue = 'ProjectV2ItemFieldTextValue',
+  ProjectV2ItemFieldUserValue = 'ProjectV2ItemFieldUserValue',
+  ProjectV2ItemFieldRepositoryValue = 'ProjectV2ItemFieldRepositoryValue',
+  ProjectV2ItemFieldReviewerValue = 'ProjectV2ItemFieldReviewerValue',
+}
+
+export class ProjectField {
+  public node: any;
+  constructor(node: any) {
+    this.node = node;
+  }
+
+  public getName(): string | undefined {
+    return this.node?.name;
+  }
+
+  public getId(): string | undefined {
+    return this.node?.id;
+  }
+}
+
+export class ProjectFieldValue {
+  public node: any;
+  public field: ProjectField;
+  constructor(node: any) {
+    this.node = node;
+    this.field = new ProjectField(node.field);
+  }
+
+  public getType(): ProjectFieldType | undefined {
+    return this.node?.__typename as ProjectFieldType;
+  }
+
+  public getValue(): string | number | undefined {
+    switch (this.getType()) {
+      case ProjectFieldType.ProjectV2ItemFieldDateValue:
+        return this.node?.date;
+      case ProjectFieldType.ProjectV2ItemFieldLabelValue:
+        return this?.node?.labels?.nodes?.map(({ name }: { name: string }) => name)?.join(', ');
+      case ProjectFieldType.ProjectV2ItemFieldNumberValue:
+        return this.node?.number;
+      case ProjectFieldType.ProjectV2ItemFieldPullRequestValue:
+        return this.node?.pullRequests?.nodes?.map(({ number }: { number: number }) => `#${number}`)?.join(', ');
+      case ProjectFieldType.ProjectV2ItemFieldSingleSelectValue:
+        return this.node?.name;
+      case ProjectFieldType.ProjectV2ItemFieldTextValue:
+        return this.node?.text;
+      case ProjectFieldType.ProjectV2ItemFieldUserValue:
+        return this.node?.users?.nodes?.map(({ login }: { login: string }) => login)?.join(', ');
+      case ProjectFieldType.ProjectV2ItemFieldRepositoryValue:
+        return this.node?.repository?.name;
+      case ProjectFieldType.ProjectV2ItemFieldReviewerValue:
+        return (
+          this.node?.reviewers?.nodes
+            // teams have names, users have logins
+            ?.map(({ login, name }: { login?: string; name?: string }) => login ?? name)
+            ?.join(', ')
+        );
+      default:
+        return this.node?.value;
+    }
   }
 }

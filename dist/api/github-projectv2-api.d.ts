@@ -26,6 +26,7 @@ export declare class Project {
 export declare const fetchProjectItems: (login: string, isOrg: boolean, projectNumber: number, token: string, progress?: ((loaded: number, total: number) => void) | undefined) => Promise<ProjectItem[]>;
 export declare class ProjectItem {
     node: any;
+    fields: ProjectFieldValue[];
     constructor(node: any);
     getCreatedAt(): string | undefined;
     isArchived(): boolean | undefined;
@@ -49,3 +50,33 @@ export declare class ProjectItem {
     getTitle(): string | undefined;
     getUrl(): string | undefined;
 }
+/**
+ * Fetch all fields across all projects for a given entity (user or org)
+ * constraints: only the first 100 projects per entity and first 100 fields per project are fetched
+ */
+export declare const fetchAllEntityFields: (login: string, isOrg: boolean, token: string) => Promise<ProjectField[]>;
+declare enum ProjectFieldType {
+    ProjectV2ItemFieldDateValue = "ProjectV2ItemFieldDateValue",
+    ProjectV2ItemFieldLabelValue = "ProjectV2ItemFieldLabelValue",
+    ProjectV2ItemFieldNumberValue = "ProjectV2ItemFieldNumberValue",
+    ProjectV2ItemFieldPullRequestValue = "ProjectV2ItemFieldPullRequestValue",
+    ProjectV2ItemFieldSingleSelectValue = "ProjectV2ItemFieldSingleSelectValue",
+    ProjectV2ItemFieldTextValue = "ProjectV2ItemFieldTextValue",
+    ProjectV2ItemFieldUserValue = "ProjectV2ItemFieldUserValue",
+    ProjectV2ItemFieldRepositoryValue = "ProjectV2ItemFieldRepositoryValue",
+    ProjectV2ItemFieldReviewerValue = "ProjectV2ItemFieldReviewerValue"
+}
+export declare class ProjectField {
+    node: any;
+    constructor(node: any);
+    getName(): string | undefined;
+    getId(): string | undefined;
+}
+export declare class ProjectFieldValue {
+    node: any;
+    field: ProjectField;
+    constructor(node: any);
+    getType(): ProjectFieldType | undefined;
+    getValue(): string | number | undefined;
+}
+export {};

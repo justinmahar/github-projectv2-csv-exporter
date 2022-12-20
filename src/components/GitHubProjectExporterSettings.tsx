@@ -4,6 +4,7 @@ import React from 'react';
 import { Accordion, Badge, Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import { DivProps } from 'react-html-props';
 import { exporterPath } from './GitHubProjectExporter';
+import { GitHubProjectFieldSettings } from './GitHubProjectFieldSettings';
 import { useLocalStorageState } from './useLocalStorageState';
 
 const KEY_PREFIX = `github-projectv2-csv-exporter`;
@@ -21,6 +22,9 @@ export const EXPORTER_KNOWN_COLUMNS_KEY = `${KEY_PREFIX}.known-columns`;
 export const EXPORTER_KNOWN_COLUMNS_DEFAULT = `Todo,In Progress,Done`;
 export const EXPORTER_COLUMN_FILTER_ENABLED_KEY = `${KEY_PREFIX}.column-filter-enabled`;
 export const EXPORTER_COLUMN_FILTER_TEXT_KEY = `${KEY_PREFIX}.column-filter-text`;
+export const EXPORTER_KNOWN_FIELDS_KEY = `${KEY_PREFIX}.known-fields`;
+export const EXPORTER_FIELD_FILTER_ENABLED_KEY = `${KEY_PREFIX}.field-filter-enabled`;
+export const EXPORTER_FIELD_FILTER_TEXT_KEY = `${KEY_PREFIX}.field-filter-text`;
 
 export const settingsPath = '/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--settings';
 export interface GitHubExporterSettingsProps extends DivProps {}
@@ -287,6 +291,8 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                     these known statuses appear.
                   </Form.Text>
                 </Form.Group>
+                <GitHubProjectFieldSettings />
+
                 <div className="d-flex justify-content-end mt-4">
                   <a href={exporterPath}>
                     <Button variant="primary">Open Exporter</Button>

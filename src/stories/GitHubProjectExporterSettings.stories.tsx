@@ -14,8 +14,9 @@ export default {
   component: GitHubExporterSettings,
   parameters: {
     controls: {
-      disable: true,
+      disabled: true,
     },
+    options: { showPanel: false },
   },
 } as ComponentMeta<typeof GitHubExporterSettings>;
 

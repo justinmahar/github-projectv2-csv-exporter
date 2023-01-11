@@ -17,8 +17,9 @@ exports.default = {
     component: GitHubProjectExporter_1.GitHubProjectExporter,
     parameters: {
         controls: {
-            disable: true,
+            disabled: true,
         },
+        options: { showPanel: false },
     },
 };
 const Template = (args) => react_1.default.createElement(GitHubProjectExporter_1.GitHubProjectExporter, Object.assign({}, args));

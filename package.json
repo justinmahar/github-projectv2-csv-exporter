@@ -1,6 +1,6 @@
 {
   "name": "github-projectv2-csv-exporter",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "coreVersion": "2.4.4",
   "author": "Justin Mahar <contact@justinmahar.com>",
   "description": "Export GitHub project cards as CSV files. Uses the ProjectV2 API.",

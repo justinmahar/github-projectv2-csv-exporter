@@ -19,9 +19,10 @@ import {
   EXPORTER_LOGIN_KEY,
   EXPORTER_REMOVE_STATUS_EMOJIS_KEY,
   EXPORTER_REMOVE_TITLE_EMOJIS_KEY,
+  LOCAL_STORAGE_KEY_PREFIX,
   settingsPath,
 } from './GitHubProjectExporterSettings';
-import { useLocalStorageState } from './useLocalStorageState';
+import { useLocalStorage } from 'react-storage-complete';
 
 export const exporterPath = '/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--exporter';
 
@@ -31,18 +32,32 @@ export interface GitHubProjectExporterProps extends DivProps {}
  * Use this tool to export issues from a GitHub project as a CSV.
  */
 export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
-  const [accessToken] = useLocalStorageState('', EXPORTER_ACCESS_TOKEN_KEY);
-  const [isOrg] = useLocalStorageState('true', EXPORTER_IS_ORG_KEY);
-  const [login] = useLocalStorageState('', EXPORTER_LOGIN_KEY);
-  const [includeIssues] = useLocalStorageState('true', EXPORTER_INCLUDE_ISSUES_KEY);
-  const [includePullRequests] = useLocalStorageState('false', EXPORTER_INCLUDE_PULL_REQUESTS_KEY);
-  const [includeDraftIssues] = useLocalStorageState('false', EXPORTER_INCLUDE_DRAFT_ISSUES_KEY);
-  const [includeClosedItems] = useLocalStorageState('false', EXPORTER_INCLUDE_CLOSED_ITEMS_KEY);
-  const [removeStatusEmojis] = useLocalStorageState('true', EXPORTER_REMOVE_STATUS_EMOJIS_KEY);
-  const [removeTitleEmojis] = useLocalStorageState('false', EXPORTER_REMOVE_TITLE_EMOJIS_KEY);
-  const [columnFilterEnabled] = useLocalStorageState('false', EXPORTER_COLUMN_FILTER_ENABLED_KEY);
-  const [columnFilterText] = useLocalStorageState('', EXPORTER_COLUMN_FILTER_TEXT_KEY);
-  const [knownColumnsText] = useLocalStorageState(EXPORTER_KNOWN_COLUMNS_DEFAULT, EXPORTER_KNOWN_COLUMNS_KEY);
+  const [accessToken] = useLocalStorage(EXPORTER_ACCESS_TOKEN_KEY, '', { prefix: LOCAL_STORAGE_KEY_PREFIX });
+  const [isOrg] = useLocalStorage(EXPORTER_IS_ORG_KEY, true, { prefix: LOCAL_STORAGE_KEY_PREFIX });
+  const [login] = useLocalStorage(EXPORTER_LOGIN_KEY, '', { prefix: LOCAL_STORAGE_KEY_PREFIX });
+  const [includeIssues] = useLocalStorage(EXPORTER_INCLUDE_ISSUES_KEY, true, { prefix: LOCAL_STORAGE_KEY_PREFIX });
+  const [includePullRequests] = useLocalStorage(EXPORTER_INCLUDE_PULL_REQUESTS_KEY, false, {
+    prefix: LOCAL_STORAGE_KEY_PREFIX,
+  });
+  const [includeDraftIssues] = useLocalStorage(EXPORTER_INCLUDE_DRAFT_ISSUES_KEY, false, {
+    prefix: LOCAL_STORAGE_KEY_PREFIX,
+  });
+  const [includeClosedItems] = useLocalStorage(EXPORTER_INCLUDE_CLOSED_ITEMS_KEY, false, {
+    prefix: LOCAL_STORAGE_KEY_PREFIX,
+  });
+  const [removeStatusEmojis] = useLocalStorage(EXPORTER_REMOVE_STATUS_EMOJIS_KEY, true, {
+    prefix: LOCAL_STORAGE_KEY_PREFIX,
+  });
+  const [removeTitleEmojis] = useLocalStorage(EXPORTER_REMOVE_TITLE_EMOJIS_KEY, false, {
+    prefix: LOCAL_STORAGE_KEY_PREFIX,
+  });
+  const [columnFilterEnabled] = useLocalStorage(EXPORTER_COLUMN_FILTER_ENABLED_KEY, false, {
+    prefix: LOCAL_STORAGE_KEY_PREFIX,
+  });
+  const [columnFilterText] = useLocalStorage(EXPORTER_COLUMN_FILTER_TEXT_KEY, '', { prefix: LOCAL_STORAGE_KEY_PREFIX });
+  const [knownColumnsText] = useLocalStorage(EXPORTER_KNOWN_COLUMNS_KEY, EXPORTER_KNOWN_COLUMNS_DEFAULT, {
+    prefix: LOCAL_STORAGE_KEY_PREFIX,
+  });
   const knownColumns = (knownColumnsText ?? '').split(',').filter((c) => !!c);
   const selectedColumnNames = (columnFilterText ?? '').split(',').filter((c) => !!c);
 
@@ -58,11 +73,11 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const [progressTotal, setProgressTotal] = React.useState(0);
   const [showStarMessage, setShowStarMessage] = React.useState(false);
 
-  const noItemsIncluded = includeIssues === 'false' && includePullRequests === 'false' && includeDraftIssues;
+  const noItemsIncluded = !includeIssues && !includePullRequests && includeDraftIssues;
 
   React.useEffect(() => {
     if (accessToken && login && loading) {
-      fetchProjects(login, isOrg === 'true', accessToken)
+      fetchProjects(login, !!isOrg, accessToken)
         .then((orgProjects) => {
           setProjects(orgProjects);
         })
@@ -107,25 +122,25 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
       progress(0, project.getTotalItemCount() ?? 0);
       // END smooth loading progress bar
 
-      fetchProjectItems(login, isOrg === 'true', projectNumber, accessToken, progress)
+      fetchProjectItems(login, !!isOrg, projectNumber, accessToken, progress)
         .then((projectItems) => {
           const dataRows = projectItems
             .filter((item) => {
               return (
-                (includeIssues === 'true' ? true : item.getType() !== 'ISSUE') &&
-                (includePullRequests === 'true' ? true : item.getType() !== 'PULL_REQUEST') &&
-                (includeDraftIssues === 'true' ? true : item.getType() !== 'DRAFT_ISSUE') &&
-                (includeClosedItems === 'true' ? true : item.getState() !== 'CLOSED') &&
-                (columnFilterEnabled !== 'true' ? true : selectedColumnNames.includes(item.getStatus() ?? ''))
+                (includeIssues ? true : item.getType() !== 'ISSUE') &&
+                (includePullRequests ? true : item.getType() !== 'PULL_REQUEST') &&
+                (includeDraftIssues ? true : item.getType() !== 'DRAFT_ISSUE') &&
+                (includeClosedItems ? true : item.getState() !== 'CLOSED') &&
+                (!columnFilterEnabled ? true : selectedColumnNames.includes(item.getStatus() ?? ''))
               );
             })
             .map((item) => {
               const rawTitle = item.getTitle() ?? '';
               const rawStatus = item.getStatus() ?? '';
               return {
-                Title: (removeTitleEmojis === 'true' ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
+                Title: (removeTitleEmojis ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
                 Number: item.getNumber() ?? '',
-                Status: (removeStatusEmojis === 'true' ? rawStatus.split(emojiRegex()).join('') : rawStatus).trim(),
+                Status: (removeStatusEmojis ? rawStatus.split(emojiRegex()).join('') : rawStatus).trim(),
                 Assignees:
                   item
                     .getAssignees()
@@ -152,10 +167,9 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
           // See: https://stackoverflow.com/questions/23593052/format-javascript-date-as-yyyy-mm-dd
           const filename = `${project.getTitle()}-${new Date().toLocaleDateString('en-ZA').split('/').join('-')}`;
           if (dataRows.length > 0) {
-            const formattedColumnNames =
-              removeStatusEmojis === 'true'
-                ? knownColumns.map((c) => c.split(emojiRegex()).join('').trim())
-                : knownColumns;
+            const formattedColumnNames = removeStatusEmojis
+              ? knownColumns.map((c) => c.split(emojiRegex()).join('').trim())
+              : knownColumns;
             // Group by Status, Assignee, then sort by issue number.
             dataRows.sort((a, b) => {
               // Convert known statuses to characters alphabetically matching the defined Status column order.
@@ -387,7 +401,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                       </thead>
                       <tbody>
                         <tr>
-                          <td>{isOrg === 'true' ? 'Organization' : 'Username'}</td>
+                          <td>{isOrg ? 'Organization' : 'Username'}</td>
                           <td>
                             <code>{login}</code>
                           </td>
@@ -396,10 +410,10 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                           <td>Include issues</td>
                           <td>
                             <Badge
-                              bg={includeIssues === 'true' ? 'primary' : noItemsIncluded ? 'danger' : 'secondary'}
+                              bg={includeIssues ? 'primary' : noItemsIncluded ? 'danger' : 'secondary'}
                               style={{ fontVariant: 'small-caps' }}
                             >
-                              {includeIssues === 'true' ? 'yes' : 'no'}
+                              {includeIssues ? 'yes' : 'no'}
                             </Badge>
                           </td>
                         </tr>
@@ -407,10 +421,10 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                           <td>Include pull requests</td>
                           <td>
                             <Badge
-                              bg={includePullRequests === 'true' ? 'primary' : noItemsIncluded ? 'danger' : 'secondary'}
+                              bg={includePullRequests ? 'primary' : noItemsIncluded ? 'danger' : 'secondary'}
                               style={{ fontVariant: 'small-caps' }}
                             >
-                              {includePullRequests === 'true' ? 'yes' : 'no'}
+                              {includePullRequests ? 'yes' : 'no'}
                             </Badge>
                           </td>
                         </tr>
@@ -418,10 +432,10 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                           <td>Include draft issues</td>
                           <td>
                             <Badge
-                              bg={includeDraftIssues === 'true' ? 'primary' : noItemsIncluded ? 'danger' : 'secondary'}
+                              bg={includeDraftIssues ? 'primary' : noItemsIncluded ? 'danger' : 'secondary'}
                               style={{ fontVariant: 'small-caps' }}
                             >
-                              {includeDraftIssues === 'true' ? 'yes' : 'no'}
+                              {includeDraftIssues ? 'yes' : 'no'}
                             </Badge>
                           </td>
                         </tr>
@@ -429,10 +443,10 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                           <td>Include closed items</td>
                           <td>
                             <Badge
-                              bg={includeClosedItems === 'true' ? 'primary' : 'secondary'}
+                              bg={includeClosedItems ? 'primary' : 'secondary'}
                               style={{ fontVariant: 'small-caps' }}
                             >
-                              {includeClosedItems === 'true' ? 'yes' : 'no'}
+                              {includeClosedItems ? 'yes' : 'no'}
                             </Badge>
                           </td>
                         </tr>
@@ -440,10 +454,10 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                           <td>Remove Status emojis</td>
                           <td>
                             <Badge
-                              bg={removeStatusEmojis === 'true' ? 'primary' : 'secondary'}
+                              bg={removeStatusEmojis ? 'primary' : 'secondary'}
                               style={{ fontVariant: 'small-caps' }}
                             >
-                              {removeStatusEmojis === 'true' ? 'yes' : 'no'}
+                              {removeStatusEmojis ? 'yes' : 'no'}
                             </Badge>
                           </td>
                         </tr>
@@ -451,17 +465,17 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                           <td>Remove Title emojis</td>
                           <td>
                             <Badge
-                              bg={removeTitleEmojis === 'true' ? 'primary' : 'secondary'}
+                              bg={removeTitleEmojis ? 'primary' : 'secondary'}
                               style={{ fontVariant: 'small-caps' }}
                             >
-                              {removeTitleEmojis === 'true' ? 'yes' : 'no'}
+                              {removeTitleEmojis ? 'yes' : 'no'}
                             </Badge>
                           </td>
                         </tr>
                         <tr>
                           <td>Statuses included</td>
                           <td>
-                            {columnFilterEnabled === 'true' ? (
+                            {columnFilterEnabled ? (
                               <div className="d-flex flex-wrap gap-1">
                                 {selectedColumnElements.length > 0 ? (
                                   selectedColumnElements

@@ -14,45 +14,63 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GitHubExporterSettings = exports.settingsPath = exports.EXPORTER_COLUMN_FILTER_TEXT_KEY = exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY = exports.EXPORTER_KNOWN_COLUMNS_DEFAULT = exports.EXPORTER_KNOWN_COLUMNS_KEY = exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY = exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY = exports.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY = exports.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY = exports.EXPORTER_INCLUDE_PULL_REQUESTS_KEY = exports.EXPORTER_INCLUDE_ISSUES_KEY = exports.EXPORTER_IS_ORG_KEY = exports.EXPORTER_LOGIN_KEY = exports.EXPORTER_ACCESS_TOKEN_KEY = void 0;
+exports.GitHubExporterSettings = exports.settingsPath = exports.EXPORTER_COLUMN_FILTER_TEXT_KEY = exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY = exports.EXPORTER_KNOWN_COLUMNS_DEFAULT = exports.EXPORTER_KNOWN_COLUMNS_KEY = exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY = exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY = exports.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY = exports.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY = exports.EXPORTER_INCLUDE_PULL_REQUESTS_KEY = exports.EXPORTER_INCLUDE_ISSUES_KEY = exports.EXPORTER_IS_ORG_KEY = exports.EXPORTER_LOGIN_KEY = exports.EXPORTER_ACCESS_TOKEN_KEY = exports.LOCAL_STORAGE_KEY_PREFIX = void 0;
 require("bootstrap/dist/css/bootstrap.css");
 const classnames_1 = __importDefault(require("classnames"));
 const react_1 = __importDefault(require("react"));
 const react_bootstrap_1 = require("react-bootstrap");
 const GitHubProjectExporter_1 = require("./GitHubProjectExporter");
-const useLocalStorageState_1 = require("./useLocalStorageState");
-const KEY_PREFIX = `github-projectv2-csv-exporter`;
-exports.EXPORTER_ACCESS_TOKEN_KEY = `${KEY_PREFIX}.token`;
-exports.EXPORTER_LOGIN_KEY = `${KEY_PREFIX}.login`;
-exports.EXPORTER_IS_ORG_KEY = `${KEY_PREFIX}.is-org`;
-exports.EXPORTER_INCLUDE_ISSUES_KEY = `${KEY_PREFIX}.include-issues`;
-exports.EXPORTER_INCLUDE_PULL_REQUESTS_KEY = `${KEY_PREFIX}.include-pull-requests`;
-exports.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY = `${KEY_PREFIX}.include-draft-issues`;
-exports.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY = `${KEY_PREFIX}.include-closed-items`;
-exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY = `${KEY_PREFIX}.remove-status-emojis`;
-exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY = `${KEY_PREFIX}.remove-title-emojis`;
-exports.EXPORTER_KNOWN_COLUMNS_KEY = `${KEY_PREFIX}.known-columns`;
+const react_storage_complete_1 = require("react-storage-complete");
+exports.LOCAL_STORAGE_KEY_PREFIX = `github-projectv2-csv-exporter`;
+exports.EXPORTER_ACCESS_TOKEN_KEY = `token`;
+exports.EXPORTER_LOGIN_KEY = `login`;
+exports.EXPORTER_IS_ORG_KEY = `is-org`;
+exports.EXPORTER_INCLUDE_ISSUES_KEY = `include-issues`;
+exports.EXPORTER_INCLUDE_PULL_REQUESTS_KEY = `include-pull-requests`;
+exports.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY = `include-draft-issues`;
+exports.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY = `include-closed-items`;
+exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY = `remove-status-emojis`;
+exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY = `remove-title-emojis`;
+exports.EXPORTER_KNOWN_COLUMNS_KEY = `known-columns`;
 exports.EXPORTER_KNOWN_COLUMNS_DEFAULT = `Todo,In Progress,Done`;
-exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY = `${KEY_PREFIX}.column-filter-enabled`;
-exports.EXPORTER_COLUMN_FILTER_TEXT_KEY = `${KEY_PREFIX}.column-filter-text`;
+exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY = `column-filter-enabled`;
+exports.EXPORTER_COLUMN_FILTER_TEXT_KEY = `column-filter-text`;
 exports.settingsPath = '/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--settings';
 /**
  * Settings for the GitHub project exporter.
  */
 const GitHubExporterSettings = (_a) => {
     var props = __rest(_a, []);
-    const [accessToken, setAccessToken] = (0, useLocalStorageState_1.useLocalStorageState)('', exports.EXPORTER_ACCESS_TOKEN_KEY);
-    const [isOrg, setIsOrg] = (0, useLocalStorageState_1.useLocalStorageState)('true', exports.EXPORTER_IS_ORG_KEY);
-    const [login, setLogin] = (0, useLocalStorageState_1.useLocalStorageState)('', exports.EXPORTER_LOGIN_KEY);
-    const [includeIssues, setIncludeIssues] = (0, useLocalStorageState_1.useLocalStorageState)('true', exports.EXPORTER_INCLUDE_ISSUES_KEY);
-    const [includePullRequests, setIncludePullRequests] = (0, useLocalStorageState_1.useLocalStorageState)('false', exports.EXPORTER_INCLUDE_PULL_REQUESTS_KEY);
-    const [includeDraftIssues, setIncludeDraftIssues] = (0, useLocalStorageState_1.useLocalStorageState)('false', exports.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY);
-    const [includeClosedItems, setIncludeClosedItems] = (0, useLocalStorageState_1.useLocalStorageState)('false', exports.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY);
-    const [removeStatusEmojis, setRemoveStatusEmojis] = (0, useLocalStorageState_1.useLocalStorageState)('true', exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY);
-    const [removeTitleEmojis, setRemoveTitleEmojis] = (0, useLocalStorageState_1.useLocalStorageState)('false', exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY);
-    const [knownColumnsText, setKnownColumnsText] = (0, useLocalStorageState_1.useLocalStorageState)(exports.EXPORTER_KNOWN_COLUMNS_DEFAULT, exports.EXPORTER_KNOWN_COLUMNS_KEY);
-    const [columnFilterEnabled, setColumnFilterEnabled] = (0, useLocalStorageState_1.useLocalStorageState)('false', exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY);
-    const [columnFilterText, setColumnFilterText] = (0, useLocalStorageState_1.useLocalStorageState)('', exports.EXPORTER_COLUMN_FILTER_TEXT_KEY);
+    const [accessToken, setAccessToken] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_ACCESS_TOKEN_KEY, '', {
+        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
+    });
+    const [isOrg, setIsOrg] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_IS_ORG_KEY, true, { prefix: exports.LOCAL_STORAGE_KEY_PREFIX });
+    const [login, setLogin] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_LOGIN_KEY, '', { prefix: exports.LOCAL_STORAGE_KEY_PREFIX });
+    const [includeIssues, setIncludeIssues] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_INCLUDE_ISSUES_KEY, true, {
+        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
+    });
+    const [includePullRequests, setIncludePullRequests] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_INCLUDE_PULL_REQUESTS_KEY, false, {
+        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
+    });
+    const [includeDraftIssues, setIncludeDraftIssues] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY, false, {
+        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
+    });
+    const [includeClosedItems, setIncludeClosedItems] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY, false, {
+        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
+    });
+    const [removeStatusEmojis, setRemoveStatusEmojis] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY, true, {
+        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
+    });
+    const [removeTitleEmojis, setRemoveTitleEmojis] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY, false, {
+        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
+    });
+    const [knownColumnsText, setKnownColumnsText] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_KNOWN_COLUMNS_KEY, exports.EXPORTER_KNOWN_COLUMNS_DEFAULT, { prefix: exports.LOCAL_STORAGE_KEY_PREFIX });
+    const [columnFilterEnabled, setColumnFilterEnabled] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY, false, {
+        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
+    });
+    const [columnFilterText, setColumnFilterText] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_COLUMN_FILTER_TEXT_KEY, '', {
+        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
+    });
     const [enteredKnownColumn, setEnteredKnownColumn] = react_1.default.useState('');
     const knownColumnRef = react_1.default.useRef(null);
     const selectedColumnNames = (columnFilterText !== null && columnFilterText !== void 0 ? columnFilterText : '').split(',').filter((c) => !!c);
@@ -70,13 +88,13 @@ const GitHubExporterSettings = (_a) => {
         return (react_1.default.createElement(react_bootstrap_1.Badge, { key: `col-${index}`, bg: selected ? 'primary' : 'light', className: `user-select-none ${selected ? '' : 'text-black'}`, onClick: () => {
                 if (!selected) {
                     setColumnFilterText([...new Set([...selectedColumnNames, colName])].join(','));
-                    setColumnFilterEnabled('true');
+                    setColumnFilterEnabled(true);
                 }
                 else {
                     const newNames = [...selectedColumnNames];
                     newNames.splice(newNames.indexOf(colName), 1);
                     setColumnFilterText(newNames.join(','));
-                    setColumnFilterEnabled(`${newNames.length > 0}`);
+                    setColumnFilterEnabled(newNames.length > 0);
                 }
             }, style: { cursor: 'pointer' } }, colName));
     });
@@ -116,26 +134,35 @@ const GitHubExporterSettings = (_a) => {
                                         ' ',
                                         react_1.default.createElement(react_bootstrap_1.Badge, { bg: "success" }, "read:project")))),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-closed-issues", className: "mb-3" },
-                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "This is an organization", id: "is-org-checkbox", checked: isOrg === 'true', onChange: (e) => setIsOrg(`${e.target.checked}`), className: "user-select-none" })),
+                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "This is an organization", id: "is-org-checkbox", checked: !!isOrg, onChange: (e) => setIsOrg(e.target.checked), className: "user-select-none" })),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-org", className: "mb-4" },
-                                react_1.default.createElement(react_bootstrap_1.Form.Label, { className: "fs-6 mb-0" }, isOrg === 'true' ? 'Organization' : 'Username'),
-                                react_1.default.createElement(react_bootstrap_1.Form.Control, { type: "text", value: login || '', placeholder: "Enter the login", onChange: (e) => setLogin(e.target.value) })),
+                                react_1.default.createElement(react_bootstrap_1.Form.Label, { className: "fs-6 mb-0" }, isOrg ? 'Organization' : 'Username'),
+                                react_1.default.createElement(react_bootstrap_1.Form.Control, { type: "text", value: login || '', placeholder: "Enter the login", onChange: (e) => setLogin(e.target.value) }),
+                                react_1.default.createElement(react_bootstrap_1.Form.Text, { className: "text-muted" },
+                                    "Note: You can use the",
+                                    ' ',
+                                    react_1.default.createElement(react_bootstrap_1.Badge, { bg: "secondary font-monospace", style: { cursor: 'pointer' }, onClick: () => {
+                                            setIsOrg(true);
+                                            setLogin('microsoft');
+                                        } }, "microsoft"),
+                                    ' ',
+                                    "organization for testing.")),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-issues", className: "mb-3" },
-                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "Include issues", id: "issues-checkbox", checked: includeIssues === 'true', onChange: (e) => setIncludeIssues(`${e.target.checked}`), className: "user-select-none" })),
+                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "Include issues", id: "issues-checkbox", checked: !!includeIssues, onChange: (e) => setIncludeIssues(e.target.checked), className: "user-select-none" })),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-pull-requests", className: "mb-3" },
-                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "Include pull requests", id: "pull-requests-checkbox", checked: includePullRequests === 'true', onChange: (e) => setIncludePullRequests(`${e.target.checked}`), className: "user-select-none" })),
+                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "Include pull requests", id: "pull-requests-checkbox", checked: !!includePullRequests, onChange: (e) => setIncludePullRequests(e.target.checked), className: "user-select-none" })),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-draft-issues", className: "mb-3" },
-                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "Include draft issues", id: "draft-issues-checkbox", checked: includeDraftIssues === 'true', onChange: (e) => setIncludeDraftIssues(`${e.target.checked}`), className: "user-select-none" })),
+                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "Include draft issues", id: "draft-issues-checkbox", checked: !!includeDraftIssues, onChange: (e) => setIncludeDraftIssues(e.target.checked), className: "user-select-none" })),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-closed-items", className: "mb-3" },
-                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "Include closed items", id: "closed-issues-checkbox", checked: includeClosedItems === 'true', onChange: (e) => setIncludeClosedItems(`${e.target.checked}`), className: "user-select-none" })),
+                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "Include closed items", id: "closed-issues-checkbox", checked: !!includeClosedItems, onChange: (e) => setIncludeClosedItems(e.target.checked), className: "user-select-none" })),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-filter-emojis", className: "mb-3" },
-                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "\uD83E\uDDEA\uD83D\uDEE0\uFE0F Remove emojis from Status", id: "filter-status-emojis-checkbox", checked: removeStatusEmojis === 'true', onChange: (e) => setRemoveStatusEmojis(`${e.target.checked}`), className: "user-select-none" })),
+                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "\uD83E\uDDEA\uD83D\uDEE0\uFE0F Remove emojis from Status", id: "filter-status-emojis-checkbox", checked: !!removeStatusEmojis, onChange: (e) => setRemoveStatusEmojis(e.target.checked), className: "user-select-none" })),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-filter-emojis", className: "mb-3" },
-                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "\uD83D\uDC1E\uD83D\uDCA1 Remove emojis from Title", id: "filter-title-emojis-checkbox", checked: removeTitleEmojis === 'true', onChange: (e) => setRemoveTitleEmojis(`${e.target.checked}`), className: "user-select-none" })),
+                                react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "\uD83D\uDC1E\uD83D\uDCA1 Remove emojis from Title", id: "filter-title-emojis-checkbox", checked: !!removeTitleEmojis, onChange: (e) => setRemoveTitleEmojis(e.target.checked), className: "user-select-none" })),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "fg-column-filter", className: "mb-3" },
                                 react_1.default.createElement("div", { className: "d-flex flex-wrap align-items-center gap-2 mb-2" },
-                                    react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "Only include issues in the following statuses:", id: "column-filter-checkbox", checked: columnFilterEnabled === 'true', onChange: (e) => setColumnFilterEnabled(`${e.target.checked}`), className: "user-select-none" }),
-                                    react_1.default.createElement(react_bootstrap_1.Form.Control, { type: "text", value: columnFilterText !== null && columnFilterText !== void 0 ? columnFilterText : '', placeholder: columnFilterEnabled !== 'true' ? '' : 'Enter status name', onChange: (e) => setColumnFilterText(e.target.value), style: { width: 220 }, disabled: columnFilterEnabled !== 'true' })),
+                                    react_1.default.createElement(react_bootstrap_1.Form.Check, { label: "Only include issues in the following statuses:", id: "column-filter-checkbox", checked: !!columnFilterEnabled, onChange: (e) => setColumnFilterEnabled(e.target.checked), className: "user-select-none" }),
+                                    react_1.default.createElement(react_bootstrap_1.Form.Control, { type: "text", value: columnFilterText !== null && columnFilterText !== void 0 ? columnFilterText : '', placeholder: !columnFilterEnabled ? '' : 'Enter status name', onChange: (e) => setColumnFilterText(e.target.value), style: { width: 220 }, disabled: !columnFilterEnabled })),
                                 react_1.default.createElement("div", { className: "d-flex flex-wrap gap-2 ms-4" }, columnNameBadgeElements)),
                             react_1.default.createElement(react_bootstrap_1.Form.Group, { controlId: "known-columns-groups", className: "mb-3" },
                                 react_1.default.createElement(react_bootstrap_1.Accordion, null,

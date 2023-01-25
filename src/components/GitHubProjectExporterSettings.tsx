@@ -6,22 +6,6 @@ import { DivProps } from 'react-html-props';
 import { exporterPath } from './GitHubProjectExporter';
 import { useExporterSettings } from './useExporterSettings';
 
-export const LOCAL_STORAGE_KEY_PREFIX = `github-projectv2-csv-exporter`;
-
-export const EXPORTER_ACCESS_TOKEN_KEY = `token`;
-export const EXPORTER_LOGIN_KEY = `login`;
-export const EXPORTER_IS_ORG_KEY = `is-org`;
-export const EXPORTER_INCLUDE_ISSUES_KEY = `include-issues`;
-export const EXPORTER_INCLUDE_PULL_REQUESTS_KEY = `include-pull-requests`;
-export const EXPORTER_INCLUDE_DRAFT_ISSUES_KEY = `include-draft-issues`;
-export const EXPORTER_INCLUDE_CLOSED_ITEMS_KEY = `include-closed-items`;
-export const EXPORTER_REMOVE_STATUS_EMOJIS_KEY = `remove-status-emojis`;
-export const EXPORTER_REMOVE_TITLE_EMOJIS_KEY = `remove-title-emojis`;
-export const EXPORTER_KNOWN_COLUMNS_KEY = `known-columns`;
-export const EXPORTER_KNOWN_COLUMNS_DEFAULT = `Todo,In Progress,Done`;
-export const EXPORTER_COLUMN_FILTER_ENABLED_KEY = `column-filter-enabled`;
-export const EXPORTER_COLUMN_FILTER_TEXT_KEY = `column-filter-text`;
-
 export const settingsPath = '/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--settings';
 export interface GitHubExporterSettingsProps extends DivProps {}
 

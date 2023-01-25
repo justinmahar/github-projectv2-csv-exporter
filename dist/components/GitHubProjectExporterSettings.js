@@ -14,27 +14,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GitHubExporterSettings = exports.settingsPath = exports.EXPORTER_COLUMN_FILTER_TEXT_KEY = exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY = exports.EXPORTER_KNOWN_COLUMNS_DEFAULT = exports.EXPORTER_KNOWN_COLUMNS_KEY = exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY = exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY = exports.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY = exports.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY = exports.EXPORTER_INCLUDE_PULL_REQUESTS_KEY = exports.EXPORTER_INCLUDE_ISSUES_KEY = exports.EXPORTER_IS_ORG_KEY = exports.EXPORTER_LOGIN_KEY = exports.EXPORTER_ACCESS_TOKEN_KEY = exports.LOCAL_STORAGE_KEY_PREFIX = void 0;
+exports.GitHubExporterSettings = exports.settingsPath = void 0;
 require("bootstrap/dist/css/bootstrap.css");
 const classnames_1 = __importDefault(require("classnames"));
 const react_1 = __importDefault(require("react"));
 const react_bootstrap_1 = require("react-bootstrap");
 const GitHubProjectExporter_1 = require("./GitHubProjectExporter");
 const useExporterSettings_1 = require("./useExporterSettings");
-exports.LOCAL_STORAGE_KEY_PREFIX = `github-projectv2-csv-exporter`;
-exports.EXPORTER_ACCESS_TOKEN_KEY = `token`;
-exports.EXPORTER_LOGIN_KEY = `login`;
-exports.EXPORTER_IS_ORG_KEY = `is-org`;
-exports.EXPORTER_INCLUDE_ISSUES_KEY = `include-issues`;
-exports.EXPORTER_INCLUDE_PULL_REQUESTS_KEY = `include-pull-requests`;
-exports.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY = `include-draft-issues`;
-exports.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY = `include-closed-items`;
-exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY = `remove-status-emojis`;
-exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY = `remove-title-emojis`;
-exports.EXPORTER_KNOWN_COLUMNS_KEY = `known-columns`;
-exports.EXPORTER_KNOWN_COLUMNS_DEFAULT = `Todo,In Progress,Done`;
-exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY = `column-filter-enabled`;
-exports.EXPORTER_COLUMN_FILTER_TEXT_KEY = `column-filter-text`;
 exports.settingsPath = '/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--settings';
 /**
  * Settings for the GitHub project exporter.

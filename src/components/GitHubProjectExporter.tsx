@@ -4,25 +4,9 @@ import { ExportToCsv } from 'export-to-csv';
 import React from 'react';
 import { Alert, Badge, Button, Card, Col, Container, Image, ProgressBar, Row, Spinner, Table } from 'react-bootstrap';
 import { DivProps } from 'react-html-props';
-import { fetchProjects, fetchProjectItems, Projects, Project } from '../api/github-projectv2-api';
-import {
-  EXPORTER_ACCESS_TOKEN_KEY,
-  EXPORTER_COLUMN_FILTER_ENABLED_KEY,
-  EXPORTER_COLUMN_FILTER_TEXT_KEY,
-  EXPORTER_INCLUDE_CLOSED_ITEMS_KEY,
-  EXPORTER_INCLUDE_DRAFT_ISSUES_KEY,
-  EXPORTER_INCLUDE_ISSUES_KEY,
-  EXPORTER_INCLUDE_PULL_REQUESTS_KEY,
-  EXPORTER_IS_ORG_KEY,
-  EXPORTER_KNOWN_COLUMNS_DEFAULT,
-  EXPORTER_KNOWN_COLUMNS_KEY,
-  EXPORTER_LOGIN_KEY,
-  EXPORTER_REMOVE_STATUS_EMOJIS_KEY,
-  EXPORTER_REMOVE_TITLE_EMOJIS_KEY,
-  LOCAL_STORAGE_KEY_PREFIX,
-  settingsPath,
-} from './GitHubProjectExporterSettings';
-import { useLocalStorage } from 'react-storage-complete';
+import { fetchProjectItems, fetchProjects, Project, Projects } from '../api/github-projectv2-api';
+import { settingsPath } from './GitHubProjectExporterSettings';
+import { useExporterSettings } from './useExporterSettings';
 
 export const exporterPath = '/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--exporter';
 
@@ -32,32 +16,19 @@ export interface GitHubProjectExporterProps extends DivProps {}
  * Use this tool to export issues from a GitHub project as a CSV.
  */
 export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
-  const [accessToken] = useLocalStorage(EXPORTER_ACCESS_TOKEN_KEY, '', { prefix: LOCAL_STORAGE_KEY_PREFIX });
-  const [isOrg] = useLocalStorage(EXPORTER_IS_ORG_KEY, true, { prefix: LOCAL_STORAGE_KEY_PREFIX });
-  const [login] = useLocalStorage(EXPORTER_LOGIN_KEY, '', { prefix: LOCAL_STORAGE_KEY_PREFIX });
-  const [includeIssues] = useLocalStorage(EXPORTER_INCLUDE_ISSUES_KEY, true, { prefix: LOCAL_STORAGE_KEY_PREFIX });
-  const [includePullRequests] = useLocalStorage(EXPORTER_INCLUDE_PULL_REQUESTS_KEY, false, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [includeDraftIssues] = useLocalStorage(EXPORTER_INCLUDE_DRAFT_ISSUES_KEY, false, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [includeClosedItems] = useLocalStorage(EXPORTER_INCLUDE_CLOSED_ITEMS_KEY, false, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [removeStatusEmojis] = useLocalStorage(EXPORTER_REMOVE_STATUS_EMOJIS_KEY, true, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [removeTitleEmojis] = useLocalStorage(EXPORTER_REMOVE_TITLE_EMOJIS_KEY, false, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [columnFilterEnabled] = useLocalStorage(EXPORTER_COLUMN_FILTER_ENABLED_KEY, false, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [columnFilterText] = useLocalStorage(EXPORTER_COLUMN_FILTER_TEXT_KEY, '', { prefix: LOCAL_STORAGE_KEY_PREFIX });
-  const [knownColumnsText] = useLocalStorage(EXPORTER_KNOWN_COLUMNS_KEY, EXPORTER_KNOWN_COLUMNS_DEFAULT, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
+  const exporterSettings = useExporterSettings();
+  const [accessToken] = exporterSettings.accessTokenState;
+  const [isOrg] = exporterSettings.isOrgState;
+  const [login] = exporterSettings.loginState;
+  const [includeIssues] = exporterSettings.includeIssuesState;
+  const [includePullRequests] = exporterSettings.includePullRequestsState;
+  const [includeDraftIssues] = exporterSettings.includeDraftIssuesState;
+  const [includeClosedItems] = exporterSettings.includeClosedItemsState;
+  const [removeStatusEmojis] = exporterSettings.removeStatusEmojisState;
+  const [removeTitleEmojis] = exporterSettings.removeTitleEmojisState;
+  const [knownColumnsText] = exporterSettings.knownColumnsTextState;
+  const [columnFilterEnabled] = exporterSettings.columnFilterEnabledState;
+  const [columnFilterText] = exporterSettings.columnFilterTextState;
   const knownColumns = (knownColumnsText ?? '').split(',').filter((c) => !!c);
   const selectedColumnNames = (columnFilterText ?? '').split(',').filter((c) => !!c);
 

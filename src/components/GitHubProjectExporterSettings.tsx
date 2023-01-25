@@ -4,7 +4,7 @@ import React from 'react';
 import { Accordion, Badge, Button, Card, Col, Container, Form, Row } from 'react-bootstrap';
 import { DivProps } from 'react-html-props';
 import { exporterPath } from './GitHubProjectExporter';
-import { useLocalStorage } from 'react-storage-complete';
+import { useExporterSettings } from './useExporterSettings';
 
 export const LOCAL_STORAGE_KEY_PREFIX = `github-projectv2-csv-exporter`;
 
@@ -29,40 +29,19 @@ export interface GitHubExporterSettingsProps extends DivProps {}
  * Settings for the GitHub project exporter.
  */
 export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps) => {
-  const [accessToken, setAccessToken] = useLocalStorage(EXPORTER_ACCESS_TOKEN_KEY, '', {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [isOrg, setIsOrg] = useLocalStorage(EXPORTER_IS_ORG_KEY, true, { prefix: LOCAL_STORAGE_KEY_PREFIX });
-  const [login, setLogin] = useLocalStorage(EXPORTER_LOGIN_KEY, '', { prefix: LOCAL_STORAGE_KEY_PREFIX });
-  const [includeIssues, setIncludeIssues] = useLocalStorage(EXPORTER_INCLUDE_ISSUES_KEY, true, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [includePullRequests, setIncludePullRequests] = useLocalStorage(EXPORTER_INCLUDE_PULL_REQUESTS_KEY, false, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [includeDraftIssues, setIncludeDraftIssues] = useLocalStorage(EXPORTER_INCLUDE_DRAFT_ISSUES_KEY, false, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [includeClosedItems, setIncludeClosedItems] = useLocalStorage(EXPORTER_INCLUDE_CLOSED_ITEMS_KEY, false, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [removeStatusEmojis, setRemoveStatusEmojis] = useLocalStorage(EXPORTER_REMOVE_STATUS_EMOJIS_KEY, true, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [removeTitleEmojis, setRemoveTitleEmojis] = useLocalStorage(EXPORTER_REMOVE_TITLE_EMOJIS_KEY, false, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [knownColumnsText, setKnownColumnsText] = useLocalStorage(
-    EXPORTER_KNOWN_COLUMNS_KEY,
-    EXPORTER_KNOWN_COLUMNS_DEFAULT,
-    { prefix: LOCAL_STORAGE_KEY_PREFIX },
-  );
-  const [columnFilterEnabled, setColumnFilterEnabled] = useLocalStorage(EXPORTER_COLUMN_FILTER_ENABLED_KEY, false, {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
-  const [columnFilterText, setColumnFilterText] = useLocalStorage(EXPORTER_COLUMN_FILTER_TEXT_KEY, '', {
-    prefix: LOCAL_STORAGE_KEY_PREFIX,
-  });
+  const exporterSettings = useExporterSettings();
+  const [accessToken, setAccessToken] = exporterSettings.accessTokenState;
+  const [isOrg, setIsOrg] = exporterSettings.isOrgState;
+  const [login, setLogin] = exporterSettings.loginState;
+  const [includeIssues, setIncludeIssues] = exporterSettings.includeIssuesState;
+  const [includePullRequests, setIncludePullRequests] = exporterSettings.includePullRequestsState;
+  const [includeDraftIssues, setIncludeDraftIssues] = exporterSettings.includeDraftIssuesState;
+  const [includeClosedItems, setIncludeClosedItems] = exporterSettings.includeClosedItemsState;
+  const [removeStatusEmojis, setRemoveStatusEmojis] = exporterSettings.removeStatusEmojisState;
+  const [removeTitleEmojis, setRemoveTitleEmojis] = exporterSettings.removeTitleEmojisState;
+  const [knownColumnsText, setKnownColumnsText] = exporterSettings.knownColumnsTextState;
+  const [columnFilterEnabled, setColumnFilterEnabled] = exporterSettings.columnFilterEnabledState;
+  const [columnFilterText, setColumnFilterText] = exporterSettings.columnFilterTextState;
 
   const [enteredKnownColumn, setEnteredKnownColumn] = React.useState('');
   const knownColumnRef = React.useRef<HTMLInputElement>(null);

@@ -11,39 +11,26 @@ const react_1 = __importDefault(require("react"));
 const react_bootstrap_1 = require("react-bootstrap");
 const github_projectv2_api_1 = require("../api/github-projectv2-api");
 const GitHubProjectExporterSettings_1 = require("./GitHubProjectExporterSettings");
-const react_storage_complete_1 = require("react-storage-complete");
+const useExporterSettings_1 = require("./useExporterSettings");
 exports.exporterPath = '/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--exporter';
 /**
  * Use this tool to export issues from a GitHub project as a CSV.
  */
 const GitHubProjectExporter = (props) => {
     var _a, _b, _c, _d;
-    const [accessToken] = (0, react_storage_complete_1.useLocalStorage)(GitHubProjectExporterSettings_1.EXPORTER_ACCESS_TOKEN_KEY, '', { prefix: GitHubProjectExporterSettings_1.LOCAL_STORAGE_KEY_PREFIX });
-    const [isOrg] = (0, react_storage_complete_1.useLocalStorage)(GitHubProjectExporterSettings_1.EXPORTER_IS_ORG_KEY, true, { prefix: GitHubProjectExporterSettings_1.LOCAL_STORAGE_KEY_PREFIX });
-    const [login] = (0, react_storage_complete_1.useLocalStorage)(GitHubProjectExporterSettings_1.EXPORTER_LOGIN_KEY, '', { prefix: GitHubProjectExporterSettings_1.LOCAL_STORAGE_KEY_PREFIX });
-    const [includeIssues] = (0, react_storage_complete_1.useLocalStorage)(GitHubProjectExporterSettings_1.EXPORTER_INCLUDE_ISSUES_KEY, true, { prefix: GitHubProjectExporterSettings_1.LOCAL_STORAGE_KEY_PREFIX });
-    const [includePullRequests] = (0, react_storage_complete_1.useLocalStorage)(GitHubProjectExporterSettings_1.EXPORTER_INCLUDE_PULL_REQUESTS_KEY, false, {
-        prefix: GitHubProjectExporterSettings_1.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [includeDraftIssues] = (0, react_storage_complete_1.useLocalStorage)(GitHubProjectExporterSettings_1.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY, false, {
-        prefix: GitHubProjectExporterSettings_1.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [includeClosedItems] = (0, react_storage_complete_1.useLocalStorage)(GitHubProjectExporterSettings_1.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY, false, {
-        prefix: GitHubProjectExporterSettings_1.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [removeStatusEmojis] = (0, react_storage_complete_1.useLocalStorage)(GitHubProjectExporterSettings_1.EXPORTER_REMOVE_STATUS_EMOJIS_KEY, true, {
-        prefix: GitHubProjectExporterSettings_1.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [removeTitleEmojis] = (0, react_storage_complete_1.useLocalStorage)(GitHubProjectExporterSettings_1.EXPORTER_REMOVE_TITLE_EMOJIS_KEY, false, {
-        prefix: GitHubProjectExporterSettings_1.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [columnFilterEnabled] = (0, react_storage_complete_1.useLocalStorage)(GitHubProjectExporterSettings_1.EXPORTER_COLUMN_FILTER_ENABLED_KEY, false, {
-        prefix: GitHubProjectExporterSettings_1.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [columnFilterText] = (0, react_storage_complete_1.useLocalStorage)(GitHubProjectExporterSettings_1.EXPORTER_COLUMN_FILTER_TEXT_KEY, '', { prefix: GitHubProjectExporterSettings_1.LOCAL_STORAGE_KEY_PREFIX });
-    const [knownColumnsText] = (0, react_storage_complete_1.useLocalStorage)(GitHubProjectExporterSettings_1.EXPORTER_KNOWN_COLUMNS_KEY, GitHubProjectExporterSettings_1.EXPORTER_KNOWN_COLUMNS_DEFAULT, {
-        prefix: GitHubProjectExporterSettings_1.LOCAL_STORAGE_KEY_PREFIX,
-    });
+    const exporterSettings = (0, useExporterSettings_1.useExporterSettings)();
+    const [accessToken] = exporterSettings.accessTokenState;
+    const [isOrg] = exporterSettings.isOrgState;
+    const [login] = exporterSettings.loginState;
+    const [includeIssues] = exporterSettings.includeIssuesState;
+    const [includePullRequests] = exporterSettings.includePullRequestsState;
+    const [includeDraftIssues] = exporterSettings.includeDraftIssuesState;
+    const [includeClosedItems] = exporterSettings.includeClosedItemsState;
+    const [removeStatusEmojis] = exporterSettings.removeStatusEmojisState;
+    const [removeTitleEmojis] = exporterSettings.removeTitleEmojisState;
+    const [knownColumnsText] = exporterSettings.knownColumnsTextState;
+    const [columnFilterEnabled] = exporterSettings.columnFilterEnabledState;
+    const [columnFilterText] = exporterSettings.columnFilterTextState;
     const knownColumns = (knownColumnsText !== null && knownColumnsText !== void 0 ? knownColumnsText : '').split(',').filter((c) => !!c);
     const selectedColumnNames = (columnFilterText !== null && columnFilterText !== void 0 ? columnFilterText : '').split(',').filter((c) => !!c);
     const [projects, setProjects] = react_1.default.useState(undefined);

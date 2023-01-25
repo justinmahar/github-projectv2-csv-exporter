@@ -20,7 +20,7 @@ const classnames_1 = __importDefault(require("classnames"));
 const react_1 = __importDefault(require("react"));
 const react_bootstrap_1 = require("react-bootstrap");
 const GitHubProjectExporter_1 = require("./GitHubProjectExporter");
-const react_storage_complete_1 = require("react-storage-complete");
+const useExporterSettings_1 = require("./useExporterSettings");
 exports.LOCAL_STORAGE_KEY_PREFIX = `github-projectv2-csv-exporter`;
 exports.EXPORTER_ACCESS_TOKEN_KEY = `token`;
 exports.EXPORTER_LOGIN_KEY = `login`;
@@ -41,36 +41,19 @@ exports.settingsPath = '/github-projectv2-csv-exporter/?path=/story/tools-github
  */
 const GitHubExporterSettings = (_a) => {
     var props = __rest(_a, []);
-    const [accessToken, setAccessToken] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_ACCESS_TOKEN_KEY, '', {
-        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [isOrg, setIsOrg] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_IS_ORG_KEY, true, { prefix: exports.LOCAL_STORAGE_KEY_PREFIX });
-    const [login, setLogin] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_LOGIN_KEY, '', { prefix: exports.LOCAL_STORAGE_KEY_PREFIX });
-    const [includeIssues, setIncludeIssues] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_INCLUDE_ISSUES_KEY, true, {
-        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [includePullRequests, setIncludePullRequests] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_INCLUDE_PULL_REQUESTS_KEY, false, {
-        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [includeDraftIssues, setIncludeDraftIssues] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_INCLUDE_DRAFT_ISSUES_KEY, false, {
-        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [includeClosedItems, setIncludeClosedItems] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_INCLUDE_CLOSED_ITEMS_KEY, false, {
-        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [removeStatusEmojis, setRemoveStatusEmojis] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_REMOVE_STATUS_EMOJIS_KEY, true, {
-        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [removeTitleEmojis, setRemoveTitleEmojis] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_REMOVE_TITLE_EMOJIS_KEY, false, {
-        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [knownColumnsText, setKnownColumnsText] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_KNOWN_COLUMNS_KEY, exports.EXPORTER_KNOWN_COLUMNS_DEFAULT, { prefix: exports.LOCAL_STORAGE_KEY_PREFIX });
-    const [columnFilterEnabled, setColumnFilterEnabled] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_COLUMN_FILTER_ENABLED_KEY, false, {
-        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
-    });
-    const [columnFilterText, setColumnFilterText] = (0, react_storage_complete_1.useLocalStorage)(exports.EXPORTER_COLUMN_FILTER_TEXT_KEY, '', {
-        prefix: exports.LOCAL_STORAGE_KEY_PREFIX,
-    });
+    const exporterSettings = (0, useExporterSettings_1.useExporterSettings)();
+    const [accessToken, setAccessToken] = exporterSettings.accessTokenState;
+    const [isOrg, setIsOrg] = exporterSettings.isOrgState;
+    const [login, setLogin] = exporterSettings.loginState;
+    const [includeIssues, setIncludeIssues] = exporterSettings.includeIssuesState;
+    const [includePullRequests, setIncludePullRequests] = exporterSettings.includePullRequestsState;
+    const [includeDraftIssues, setIncludeDraftIssues] = exporterSettings.includeDraftIssuesState;
+    const [includeClosedItems, setIncludeClosedItems] = exporterSettings.includeClosedItemsState;
+    const [removeStatusEmojis, setRemoveStatusEmojis] = exporterSettings.removeStatusEmojisState;
+    const [removeTitleEmojis, setRemoveTitleEmojis] = exporterSettings.removeTitleEmojisState;
+    const [knownColumnsText, setKnownColumnsText] = exporterSettings.knownColumnsTextState;
+    const [columnFilterEnabled, setColumnFilterEnabled] = exporterSettings.columnFilterEnabledState;
+    const [columnFilterText, setColumnFilterText] = exporterSettings.columnFilterTextState;
     const [enteredKnownColumn, setEnteredKnownColumn] = react_1.default.useState('');
     const knownColumnRef = react_1.default.useRef(null);
     const selectedColumnNames = (columnFilterText !== null && columnFilterText !== void 0 ? columnFilterText : '').split(',').filter((c) => !!c);

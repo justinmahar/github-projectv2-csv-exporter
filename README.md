@@ -63,10 +63,10 @@ Your support helps keep the project going and will earn you some serious virtual
 - [Installation](#installation)
 - [Usage](#usage)
   - [Via Website](#via-website)
-  - [Locally](#locally)
-      - [Clone the project:](#clone-the-project)
-      - [Install dependencies:](#install-dependencies)
-      - [Start the project:](#start-the-project)
+  - [Via Local Storybook Site](#via-local-storybook-site)
+      - [Clone the project](#clone-the-project)
+      - [Install dependencies](#install-dependencies)
+      - [Start the project](#start-the-project)
       - [Open localhost:6006](#open-localhost6006)
   - [Via `npm`](#via-npm)
     - [fetchProjects](#fetchprojects)
@@ -91,29 +91,40 @@ npm i github-projectv2-csv-exporter
 
 Go here: **[GitHub Project Exporter](https://justinmahar.github.io/github-projectv2-csv-exporter/?path=/story/tools-github-project-exporter--exporter)**.
 
-### Locally
+This is a static Storybook site hosted on GitHub Pages.
 
-##### Clone the project:
+### Via Local Storybook Site
+
+If you'd like, you can run the project locally.
+
+##### Clone the project
 
 ```bash
 git clone git@github.com:justinmahar/github-projectv2-csv-exporter.git
 ```
 
-##### Install dependencies:
+And navigate to the project:
 
 ```bash
 cd github-projectv2-csv-exporter
+```
+
+##### Install dependencies
+
+```bash
 npm install
 ```
 
-##### Start the project:
+##### Start the project
 
 ```
 npm start
 ```
 ##### Open localhost:6006
 
-Once the Storybook server starts, a development server will be running locally. Open the project here: [localhost:6006](http://localhost:6006/)
+Once the Storybook server starts, a development server will be running locally. 
+
+Open the project here: [localhost:6006](http://localhost:6006/)
 
 ### Via `npm`
 

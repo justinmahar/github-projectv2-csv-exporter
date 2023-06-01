@@ -69,6 +69,42 @@ export const fetchProjects = async (login: string, isOrg: boolean, token: string
   return new Projects(results);
 };
 
+export const fetchProject = async (login: string, isOrg: boolean, token: string, number: number): Promise<Project> => {
+  const ORG_PROJECTS_QUERY = gql`
+    query ProjectQuery($login: String!, $number: Int!) {
+      viewer {
+        login
+        name
+        url
+        avatarUrl
+      }
+      entity: ${isOrg ? 'organization' : 'user'}(login: $login) {
+        avatarUrl
+        login
+        name
+        url
+        projectV2(number: $number) {
+          title
+          number
+          url
+          items {
+            totalCount
+          }
+        }
+      }
+    }
+  `;
+  const client = createGQLClient(token);
+  const results = await client.query({
+    query: ORG_PROJECTS_QUERY,
+    variables: {
+      login,
+      number,
+    },
+  });
+  return new Project(results?.data?.entity?.projectV2);
+};
+
 export class Projects {
   public results: any;
   constructor(results: any) {

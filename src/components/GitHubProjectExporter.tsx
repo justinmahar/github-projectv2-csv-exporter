@@ -2,9 +2,9 @@ import 'bootstrap/dist/css/bootstrap.css';
 import emojiRegex from 'emoji-regex';
 import { ExportToCsv } from 'export-to-csv';
 import React from 'react';
-import { Alert, Badge, Button, Card, Col, Container, Image, ProgressBar, Row, Spinner, Table } from 'react-bootstrap';
+import { Alert, Badge, Button, Card, Col, Container, Image, ProgressBar, Row, Spinner, Table, Form } from 'react-bootstrap';
 import { DivProps } from 'react-html-props';
-import { fetchProjectItems, fetchProjects, Project, Projects } from '../api/github-projectv2-api';
+import { fetchProjectItems, fetchProjects, fetchProject, Project, Projects } from '../api/github-projectv2-api';
 import { settingsPath } from './GitHubProjectExporterSettings';
 import { useExporterSettings } from './useExporterSettings';
 
@@ -44,6 +44,11 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const [progressTotal, setProgressTotal] = React.useState(0);
   const [showStarMessage, setShowStarMessage] = React.useState(false);
 
+  const [adHocProjectNumber, setAdHocProjectNumber] = React.useState<number | undefined>(undefined);
+  const [adHocProject, setAdHocProject] = React.useState<Project | undefined>(undefined);
+  const [adHocLoading, setAdHocLoading] = React.useState(false);
+  const [loadAdHocProjectError, setLoadAdHocProjectError] = React.useState<Error | undefined>(undefined)
+
   const noItemsIncluded = !includeIssues && !includePullRequests && includeDraftIssues;
 
   React.useEffect(() => {
@@ -59,6 +64,22 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
         .finally(() => setLoading(false));
     }
   }, [accessToken, login, loading, isOrg]);
+
+  const handleFetchProject = () => {
+    if (accessToken && login && adHocProjectNumber) {
+      setAdHocLoading(true);
+      fetchProject(login, !!isOrg, accessToken, adHocProjectNumber)
+        .then((project) => {
+          setAdHocProject(project);
+        })
+        .catch((e) => {
+          console.error(e);
+          setLoadAdHocProjectError(e);
+          setAdHocProject(undefined);
+        })
+        .finally(() => setAdHocLoading(false));
+    }
+  };
 
   const handleExportCSV = (project: Project) => {
     const projectNumber = project.getProjectNumber() ?? -1;
@@ -206,6 +227,9 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
       );
     });
 
+  const adHocCurrentlyExporting = exporting && (adHocProject?.getProjectNumber() || -1) === exportingProjectNumber;
+  const adHocLoadPercentage = Math.round((progressCurrent / progressTotal) * 100) || 0;
+
   const exportCsv = (jsonData: Record<string, any>, filename: string) => {
     // https://www.npmjs.com/package/export-to-csv
     const options = {
@@ -254,6 +278,18 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                   <p className="mb-0 font-monospace small">{`${loadProjectsError}`}</p>
                 </Alert>
               )}
+              {loadAdHocProjectError && (
+                <Alert variant="danger" className="mb-2">
+                  <p className="fw-bold">
+                    Could not load project number{' '}
+                    <Badge bg="danger" className="font-monospace">
+                      {adHocProjectNumber}
+                    </Badge>
+                    .
+                  </p>
+                  <p className="mb-0 font-monospace small">{`${loadAdHocProjectError}`}</p>
+                </Alert>
+              )}
               {exportProjectItemsError && (
                 <Alert variant="danger" className="mb-2">
                   <p className="fw-bold">Could not export project.</p>
@@ -284,6 +320,93 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                     when you're ready.
                   </p>
                 </Alert>
+              )}
+              {validSettings && (
+                <Card className="mb-0">
+                  <Card.Header>Project</Card.Header>
+                  <Card.Body>
+                    <Form>
+                      <Form.Group controlId="fg-token" className="mb-3">
+                        <Form.Label className="fs-6 mb-0">GitHub Project Number</Form.Label>
+                        <Form.Control
+                          type="number"
+                          value={adHocProjectNumber || ''}
+                          placeholder="Paste your GitHub Project Number here"
+                          onChange={(e) => {setLoadAdHocProjectError(undefined); setAdHocProjectNumber(parseInt(e.target.value));}}
+                        />
+                      </Form.Group>
+                      {adHocProject && (
+                        <Table striped bordered responsive>
+                          <thead>
+                            <tr>
+                              <th>Property</th>
+                              <th>Value</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td>Project</td>
+                              <td>
+                              <a href={adHocProject.getUrl() ?? ''} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                                {adHocProject.getTitle()}
+                              </a>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>Number</td>
+                              <td>
+                                <Badge
+                                  bg='primary'
+                                  style={{ fontVariant: 'small-caps' }}
+                                >
+                                  {adHocProject.getProjectNumber()}
+                                </Badge>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td>Total Items</td>
+                              <td>
+                                <Badge
+                                  bg={adHocProject.getTotalItemCount() > 0 ? 'primary' : 'danger'}
+                                  style={{ fontVariant: 'small-caps' }}
+                                >
+                                  {adHocProject.getTotalItemCount()}
+                                </Badge>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </Table>
+                      )}
+                      <div
+                        className="d-flex"
+                        style={{ justifyContent: 'space-between' }}
+                      >
+                        <Button
+                          variant="primary"
+                          type="submit"
+                          disabled={adHocLoading}
+                          onClick={() => handleFetchProject()}
+                        >
+                          {adHocLoading && <Spinner animation="border" role="status" size="sm" />} Fetch Project
+                        </Button>
+                        <div className="d-flex flex-column gap-2">
+                          <div>
+                            <Button
+                              variant="primary"
+                              onClick={() => handleExportCSV(adHocProject)}
+                              disabled={exporting || !adHocProject || !adHocProject.getTotalItemCount()}
+                            >
+                              {adHocCurrentlyExporting && <Spinner animation="border" role="status" size="sm" />} Export CSV
+                            </Button>
+                          </div>
+                          {adHocCurrentlyExporting && (
+                            <ProgressBar animated variant="success" now={adHocLoadPercentage} label={`${adHocLoadPercentage}%`} />
+                          )}
+                        </div>
+                      </div>
+                    </Form>
+                  </Card.Body>
+                </Card>
               )}
               {validSettings && (
                 <Card className="mb-0">

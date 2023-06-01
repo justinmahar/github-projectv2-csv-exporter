@@ -24,6 +24,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
   const [includePullRequests] = exporterSettings.includePullRequestsState;
   const [includeDraftIssues] = exporterSettings.includeDraftIssuesState;
   const [includeClosedItems] = exporterSettings.includeClosedItemsState;
+  const [includeBody] = exporterSettings.includeBody;
   const [removeStatusEmojis] = exporterSettings.removeStatusEmojisState;
   const [removeTitleEmojis] = exporterSettings.removeTitleEmojisState;
   const [knownColumnsText] = exporterSettings.knownColumnsTextState;
@@ -153,6 +154,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                 ClosedAt: item.getClosedAt() ?? '',
                 Type: item.getType() ?? '',
                 State: item.getState() ?? '',
+                ...(includeBody) && {Body: item.getBody() ?? ''},
               };
             });
           // The en-ZA locale uses YYYY/MM/DD. We then replace all / with -.

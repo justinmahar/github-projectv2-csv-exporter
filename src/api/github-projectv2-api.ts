@@ -1,5 +1,7 @@
 import { ApolloClient, createHttpLink, gql, InMemoryCache } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
+import toJ from './j2m';
+
 
 // GitHub Auth instructions: https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql
 // Apollo Client (About): https://www.apollographql.com/docs/react/
@@ -219,6 +221,27 @@ export const fetchProjectItems = async (
                     body
                     number
                     closedAt
+                    comments (first: 30) {
+                      nodes {
+                        body
+                        createdAt
+                        author {
+                          login
+                          ... on User {
+                            name
+                            login
+                          }
+                          ... on Organization {
+                            name
+                            login
+                          }
+                          ... on EnterpriseUserAccount {
+                            name
+                            login
+                          }
+                        }
+                      }
+                    }
                   }
                   ... on DraftIssue {
                     title
@@ -280,6 +303,26 @@ export const fetchProjectItems = async (
                 status: fieldValueByName(name: $statusFieldName) {
                   ... on ProjectV2ItemFieldSingleSelectValue {
                     name
+                  }
+                }
+                priority: fieldValueByName(name: "Priority") {
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    name
+                  }
+                }
+                size: fieldValueByName(name: "Size") {
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    name
+                  }
+                }
+                issueType: fieldValueByName(name: "Type") {
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    name
+                  }
+                }
+                sprint: fieldValueByName(name: "Sprint") {
+                  ... on ProjectV2ItemFieldIterationValue {
+                    title
                   }
                 }
                 type
@@ -345,6 +388,9 @@ export class ProjectItem {
     return this.node?.updatedAt;
   }
   public getAssignees(): { name: string | undefined; login: string | undefined }[] | undefined {
+
+    
+
     return ((this.node?.content?.assignees?.nodes ?? []) as any[]).map((data) => {
       return { name: data?.name ?? '', login: data?.login ?? '' };
     });
@@ -354,7 +400,27 @@ export class ProjectItem {
     return { name: authorData?.name ?? '', login: authorData?.login ?? '' };
   }
   public getBody(): string | undefined {
-    return this.node?.content?.body;
+    return toJ('**Original Description:** ~BREAK' + this.node?.content?.body + ' ~BREAK ' + this.getSource() + this.getComments() + this.getSprintForBody());
+  }
+  private getSprintForBody(): string {
+    return this.getSprint() ? ` ~BREAK **Historical Sprint:** ${this.getSprint()}` : '';
+  }
+  private getSource(): string {
+    const source = ` ~BREAK **Source:** [${this.getUrl()}](${this.getUrl()})`
+
+    return this.getUrl() ? source : '';
+  }
+  private getComments(): string {
+    const comments = ((this.node?.content?.comments?.nodes as any[]) ?? []).map(comment => {
+      const author = this.getCommentAuthor(comment?.author);
+
+      return ` ~BREAK ${author} @ ${comment?.createdAt} ~BREAK ${comment?.body}`;
+    }).join(' ~BREAK ');
+
+    return comments ? ` ~BREAK **Comments:**` + comments : '';
+  }
+  private getCommentAuthor(authorData: any): string {
+    return `(${authorData?.login}) ${authorData?.name ?? ''}`;
   }
   public getClosedAt(): string | undefined {
     return this.node?.content?.closedAt;
@@ -376,5 +442,17 @@ export class ProjectItem {
   }
   public getUrl(): string | undefined {
     return this.node?.content?.url;
+  }
+  public getSize(): string | undefined {
+    return this.node?.size?.name;
+  }
+  public getPriority(): string | undefined {
+    return this.node?.priority?.name;
+  }
+  public getIssueType(): string | undefined {
+    return this.node?.issueType?.name;
+  }
+  public getSprint(): string | undefined {
+    return this.node?.sprint?.title;
   }
 }

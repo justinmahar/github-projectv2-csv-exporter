@@ -130,6 +130,12 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
             .map((item) => {
               const rawTitle = item.getTitle() ?? '';
               const rawStatus = item.getStatus() ?? '';
+              const rawSize = item.getSize() ?? '';
+              const rawPriority = item.getPriority() ?? '';
+              const rawIssueType = item.getIssueType() ?? '';
+              const rawSprint = item.getSprint() ?? '';
+
+
               return {
                 Title: (removeTitleEmojis ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
                 Number: item.getNumber() ?? '',
@@ -154,6 +160,10 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                 ClosedAt: item.getClosedAt() ?? '',
                 Type: item.getType() ?? '',
                 State: item.getState() ?? '',
+                Size: (removeStatusEmojis ? rawSize.split(emojiRegex()).join('') : rawSize).trim(),
+                Priority: (removeStatusEmojis ? rawPriority.split(emojiRegex()).join('') : rawPriority).trim(),
+                IssueType: (removeStatusEmojis ? rawIssueType.split(emojiRegex()).join('') : rawIssueType).trim(),
+                Sprint: (removeStatusEmojis ? rawSprint.split(emojiRegex()).join('') : rawSprint).trim(),
                 ...(includeBody) && {Body: item.getBody() ?? ''},
               };
             });

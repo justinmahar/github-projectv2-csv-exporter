@@ -75,6 +75,7 @@
     "emoji-regex": "^10.2.1",
     "export-to-csv": "^0.2.1",
     "graphql": "^16.6.0",
+    "j2m": "^1.1.0",
     "react-bootstrap": "^2.5.0",
     "react-storage-complete": "^1.0.1"
   }

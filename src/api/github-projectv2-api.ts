@@ -1,7 +1,7 @@
+import emojiRegex from 'emoji-regex';
 import { ApolloClient, createHttpLink, gql, InMemoryCache } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import toJ from './j2m';
-
 
 // GitHub Auth instructions: https://docs.github.com/en/graphql/guides/forming-calls-with-graphql#authenticating-with-graphql
 // Apollo Client (About): https://www.apollographql.com/docs/react/
@@ -325,6 +325,11 @@ export const fetchProjectItems = async (
                     title
                   }
                 }
+                project: fieldValueByName(name: "Project") {
+                  ... on ProjectV2ItemFieldSingleSelectValue {
+                    name
+                  }
+                }
                 type
               }
               cursor
@@ -369,17 +374,45 @@ export const fetchProjectItems = async (
 
 export class ProjectItem {
   public node: any;
+  public userMap: any;
   constructor(node: any) {
     this.node = node;
+    this.userMap = {
+      
+    };
   }
   public getCreatedAt(): string | undefined {
-    return this.node?.createdAt;
+    const toShortFormat = (dateObj: Date) => {
+
+      const monthNames = ["Jan", "Feb", "Mar", "Apr",
+                          "May", "Jun", "Jul", "Aug",
+                          "Sep", "Oct", "Nov", "Dec"];
+      
+      const day = dateObj.getDate();
+      
+      const monthIndex = dateObj.getMonth();
+      const monthName = monthNames[monthIndex];
+      
+      const year = dateObj.getFullYear();
+      
+      return `${day}-${monthName}-${year}`;  
+  }
+    return toShortFormat(new Date(`${this.node?.createdAt}`));
   }
   public isArchived(): boolean | undefined {
     return !!this.node?.isArchived;
   }
   public getStatus(): string | undefined {
-    return this.node?.status?.name;
+    const statusMap: any = {
+      'On Hold': 'Blocked',
+      'Done': 'Done',
+      'In progress': 'In Progress',
+      'Ready': 'Open',
+      'In review': 'PR Review',
+      'Epics (Multi-issue)': 'Open',
+    }
+
+    return statusMap[this.node?.status?.name.split(emojiRegex()).join('').trim()] || 'Open';
   }
   public getType(): string | undefined {
     return this.node?.type;
@@ -387,39 +420,55 @@ export class ProjectItem {
   public getUpdatedAt(): string | undefined {
     return this.node?.updatedAt;
   }
-  public getAssignees(): { name: string | undefined; login: string | undefined }[] | undefined {
-
-    
+  public getAssignees():
+    | { name: string | undefined; login: string | undefined; email: string | undefined }[]
+    | undefined {
 
     return ((this.node?.content?.assignees?.nodes ?? []) as any[]).map((data) => {
-      return { name: data?.name ?? '', login: data?.login ?? '' };
+      return { name: data?.name ?? '', login: data?.login ?? '', email: this.userMap[data?.login ?? ''] };
     });
   }
-  public getAuthor(): { name: string | undefined; login: string | undefined } | undefined {
+  public getAuthor(): { name: string | undefined; login: string | undefined, email: string | undefined } | undefined {
     const authorData = this.node?.content?.author;
-    return { name: authorData?.name ?? '', login: authorData?.login ?? '' };
+    return { name: authorData?.name ?? '', login: authorData?.login ?? '', email: this.userMap[authorData?.login ?? ''] };
   }
   public getBody(): string | undefined {
-    return toJ('**Original Description:** ~BREAK' + this.node?.content?.body + ' ~BREAK ' + this.getSource() + this.getComments() + this.getSprintForBody());
+    return toJ(
+      '**Original Description:** \n\r' +
+        this.node?.content?.body +
+        ' \n\r ' +
+        this.getSource() +
+        this.getComments() +
+        this.getSprintForBody() +
+        this.getCreatedAtForBody()
+    );
+  }
+  private getCreatedAtForBody(): string {
+    const authorHeading = this.getAuthorHeading(this.getAuthor())
+    const createdAt = ` \n\r **Created by:** ${authorHeading} @ ${this.getCreatedAt()} \n\r`
+
+    return createdAt;
   }
   private getSprintForBody(): string {
-    return this.getSprint() ? ` ~BREAK **Historical Sprint:** ${this.getSprint()}` : '';
+    return this.getSprint() ? ` \n\r **Historical Sprint:** ${this.getSprint()} \n\r` : '';
   }
   private getSource(): string {
-    const source = ` ~BREAK **Source:** [${this.getUrl()}](${this.getUrl()})`
+    const source = ` \n\r **Source:** [${this.getUrl()}](${this.getUrl()})`;
 
     return this.getUrl() ? source : '';
   }
   private getComments(): string {
-    const comments = ((this.node?.content?.comments?.nodes as any[]) ?? []).map(comment => {
-      const author = this.getCommentAuthor(comment?.author);
+    const comments = ((this.node?.content?.comments?.nodes as any[]) ?? [])
+      .map((comment) => {
+        const author = this.getAuthorHeading(comment?.author);
 
-      return ` ~BREAK ${author} @ ${comment?.createdAt} ~BREAK ${comment?.body}`;
-    }).join(' ~BREAK ');
+        return ` \n\r ${author} @ ${comment?.createdAt} \n\r ${comment?.body}`;
+      })
+      .join(' \n\r ');
 
-    return comments ? ` ~BREAK **Comments:**` + comments : '';
+    return comments ? ` \n\r **Comments:**` + comments : '';
   }
-  private getCommentAuthor(authorData: any): string {
+  private getAuthorHeading(authorData: any): string {
     return `(${authorData?.login}) ${authorData?.name ?? ''}`;
   }
   public getClosedAt(): string | undefined {
@@ -444,15 +493,50 @@ export class ProjectItem {
     return this.node?.content?.url;
   }
   public getSize(): string | undefined {
-    return this.node?.size?.name;
+    const githubSize = this.node?.size?.name || '';
+
+    const sizeMap: any = {
+      'X-Large': 13,
+      Large: 8,
+      Medium: 5,
+      Small: 2,
+      Tiny: 1,
+    };
+
+    return sizeMap[githubSize.split(emojiRegex()).join('').trim()] || '';
   }
   public getPriority(): string | undefined {
-    return this.node?.priority?.name;
+    const githubPriority = this.node?.priority?.name || '';
+
+    const priorityMap: any = {
+      Urgent: 'Highest',
+      High: 'High',
+      Medium: 'Medium',
+      Low: 'Low',
+    };
+
+    return priorityMap[githubPriority.split(emojiRegex()).join('').trim()] || '';
   }
   public getIssueType(): string | undefined {
-    return this.node?.issueType?.name;
+    const githubIssueType = this.node?.issueType?.name;
+    const issueTypeMap: any = {
+      Feature: 'Feature or Change Request',
+      Bug: 'Bug',
+      Improvement: 'Story',
+      'Tech Debt': 'Tech Debt',
+    };
+
+    return issueTypeMap[githubIssueType];
   }
   public getSprint(): string | undefined {
     return this.node?.sprint?.title;
+  }
+  public getComponent(): string {
+    const githubProject = this.node?.project?.name || '';
+    const componentMap: any = {
+      'FBA Integration': 'FBA Integration'
+    }
+    
+    return componentMap[githubProject.split(emojiRegex()).join('').trim()] || '';
   }
 }

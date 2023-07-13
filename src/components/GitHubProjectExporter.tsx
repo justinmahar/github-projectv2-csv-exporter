@@ -124,6 +124,7 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                 (includePullRequests ? true : item.getType() !== 'PULL_REQUEST') &&
                 (includeDraftIssues ? true : item.getType() !== 'DRAFT_ISSUE') &&
                 (includeClosedItems ? true : item.getState() !== 'CLOSED') &&
+                (includeClosedItems ? true : item.getStatus() !== 'DONE') &&
                 (!columnFilterEnabled ? true : selectedColumnNames.includes(item.getStatus() ?? ''))
               );
             })
@@ -137,34 +138,40 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
 
 
               return {
-                Title: (removeTitleEmojis ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
-                Number: item.getNumber() ?? '',
+                Summary: (removeTitleEmojis ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
+                // Number: item.getNumber() ?? '',
                 Status: (removeStatusEmojis ? rawStatus.split(emojiRegex()).join('') : rawStatus).trim(),
-                Assignees:
+                // Assignees:
+                //   item
+                //     .getAssignees()
+                //     ?.map((a) => a.name)
+                //     .join(', ') ?? '',
+                'Assignees Emails':
                   item
                     .getAssignees()
-                    ?.map((a) => a.name)
-                    .join(', ') ?? '',
-                'Assignee Usernames':
-                  item
-                    .getAssignees()
-                    ?.map((a) => a.login)
-                    .join(', ') ?? '',
+                    ?.[0]?.email ?? '',
+                // 'Assignee Usernames':
+                //   item
+                //     .getAssignees()
+                //     ?.map((a) => a.login)
+                //     .join(', ') ?? '',
                 Labels: item.getLabels()?.join(', ') ?? '',
-                URL: item.getUrl() ?? '',
-                Milestone: item.getMilestone() ?? '',
-                Author: item.getAuthor()?.name ?? '',
-                'Author Username': item.getAuthor()?.login ?? '',
+                // URL: item.getUrl() ?? '',
+                // Milestone: item.getMilestone() ?? '',
+                // Author: item.getAuthor()?.name ?? '',
+                // 'Author Username': item.getAuthor()?.login ?? '',
+                'Author Email': item.getAuthor()?.email ?? '',
                 CreatedAt: item.getCreatedAt() ?? '',
-                UpdatedAt: item.getUpdatedAt() ?? '',
-                ClosedAt: item.getClosedAt() ?? '',
-                Type: item.getType() ?? '',
-                State: item.getState() ?? '',
-                Size: (removeStatusEmojis ? rawSize.split(emojiRegex()).join('') : rawSize).trim(),
-                Priority: (removeStatusEmojis ? rawPriority.split(emojiRegex()).join('') : rawPriority).trim(),
+                // UpdatedAt: item.getUpdatedAt() ?? '',
+                // ClosedAt: item.getClosedAt() ?? '',
+                // Type: item.getType() ?? '',
+                // State: item.getState() ?? '',
+                Size: rawSize,
+                Priority: rawPriority,
+                Component: item.getComponent(),
                 IssueType: (removeStatusEmojis ? rawIssueType.split(emojiRegex()).join('') : rawIssueType).trim(),
-                Sprint: (removeStatusEmojis ? rawSprint.split(emojiRegex()).join('') : rawSprint).trim(),
-                ...(includeBody) && {Body: item.getBody() ?? ''},
+                // Sprint: (removeStatusEmojis ? rawSprint.split(emojiRegex()).join('') : rawSprint).trim(),
+                ...(includeBody) && {Description: item.getBody() ?? ''},
               };
             });
           // The en-ZA locale uses YYYY/MM/DD. We then replace all / with -.

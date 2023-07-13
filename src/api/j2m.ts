@@ -81,11 +81,11 @@ export default function toJ(input) {
   // Join the split lines back
   input = ""
   for (var i = 0; i < lines.length; i++) {
-    input += lines[i] + "\\"
+    input += lines[i] + "\n"
   }
   
-  // line breaks
-  input = input.replace(/~BREAK/g, "\\\\")
+  // // line breaks
+  // input = input.replace(/~BREAK/g, "\\\\")
 
   return input;
 };

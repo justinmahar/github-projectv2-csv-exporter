@@ -109,7 +109,7 @@ export class Project {
   constructor(node: any) {
     this.node = node;
   }
-  public getTitle(): number | undefined {
+  public getTitle(): string | undefined {
     return this.node?.title;
   }
   public getProjectNumber(): number | undefined {

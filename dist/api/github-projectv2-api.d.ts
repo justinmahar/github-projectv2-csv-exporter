@@ -18,7 +18,7 @@ export declare class Projects {
 export declare class Project {
     node: any;
     constructor(node: any);
-    getTitle(): number | undefined;
+    getTitle(): string | undefined;
     getProjectNumber(): number | undefined;
     getUrl(): string | undefined;
     getTotalItemCount(): number | undefined;

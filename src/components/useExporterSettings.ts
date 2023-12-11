@@ -24,6 +24,9 @@ export const INCLUDE_DRAFT_ISSUES_DEFAULT = false;
 export const INCLUDE_CLOSED_ITEMS_KEY = `include-closed-items`;
 export const INCLUDE_CLOSED_ITEMS_DEFAULT = false;
 
+export const INCLUDE_BODY_KEY = `include-body`;
+export const INCLUDE_BODY_DEFAULT = false;
+
 export const REMOVE_STATUS_EMOJIS_KEY = `remove-status-emojis`;
 export const REMOVE_STATUS_EMOJIS_DEFAULT = true;
 
@@ -57,6 +60,9 @@ export const useExporterSettings = () => {
   const includeClosedItemsState = useLocalStorage(INCLUDE_CLOSED_ITEMS_KEY, INCLUDE_CLOSED_ITEMS_DEFAULT, {
     prefix: PREFIX,
   });
+  const includeBody = useLocalStorage(INCLUDE_BODY_KEY, INCLUDE_BODY_DEFAULT, {
+    prefix: PREFIX,
+  });
   const removeStatusEmojisState = useLocalStorage(REMOVE_STATUS_EMOJIS_KEY, REMOVE_STATUS_EMOJIS_DEFAULT, {
     prefix: PREFIX,
   });
@@ -82,6 +88,7 @@ export const useExporterSettings = () => {
       includePullRequestsState,
       includeDraftIssuesState,
       includeClosedItemsState,
+      includeBody,
       removeStatusEmojisState,
       removeTitleEmojisState,
       knownColumnsTextState,
@@ -96,6 +103,7 @@ export const useExporterSettings = () => {
     includeDraftIssuesState,
     includeIssuesState,
     includePullRequestsState,
+    includeBody,
     isOrgState,
     knownColumnsTextState,
     loginState,

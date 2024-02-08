@@ -1,25 +1,19 @@
-/*
- * More on default export: https://storybook.js.org/docs/react/writing-stories/introduction#default-export
- * More on component templates: https://storybook.js.org/docs/react/writing-stories/introduction#using-args
- * More on args: https://storybook.js.org/docs/react/writing-stories/args
- * More on argTypes: https://storybook.js.org/docs/react/api/argtypes
- */
-import React from 'react';
-import { ComponentStory, ComponentMeta } from '@storybook/react';
-
+import type { Meta, StoryObj } from '@storybook/react';
 import { GitHubExporterSettings } from '../components/GitHubProjectExporterSettings';
 
-export default {
-  title: 'Tools/GitHub Project Exporter',
-  component: GitHubExporterSettings,
+// === Setup ===
+const StoryComponent = GitHubExporterSettings; // <-- Set to your component
+const meta: Meta<typeof StoryComponent> = {
+  title: 'Tools/GitHub Project Exporter', // <-- Set to your story title
+  component: StoryComponent,
   parameters: {
-    controls: {
-      disabled: true,
-    },
-    options: { showPanel: false },
+    options: { showPanel: false }, // Don't show addons panel
   },
-} as ComponentMeta<typeof GitHubExporterSettings>;
+};
+export default meta;
+type Story = StoryObj<typeof meta>;
 
-const Template: ComponentStory<typeof GitHubExporterSettings> = (args) => <GitHubExporterSettings {...args} />;
-
-export const Settings = Template.bind({});
+// === Stories ===
+export const Settings: Story = {
+  args: {},
+};

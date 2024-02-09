@@ -1,7 +1,7 @@
 {
   "name": "github-projectv2-csv-exporter",
   "version": "1.1.9",
-  "coreVersion": "3.0.7",
+  "coreVersion": "3.0.9",
   "author": "Justin Mahar <contact@justinmahar.com>",
   "description": "Export GitHub project cards as CSV files. Uses the ProjectV2 API.",
   "homepage": "https://justinmahar.github.io/github-projectv2-csv-exporter/",
@@ -58,7 +58,7 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-storybook": "^0.6.15",
     "eslint": "^8.56.0",
-    "lockblocks": "^1.1.4",
+    "lockblocks": "^1.1.8",
     "prettier": "^3.2.5",
     "react-dom": "^18.2.0",
     "react-html-props": "^2.0.3",

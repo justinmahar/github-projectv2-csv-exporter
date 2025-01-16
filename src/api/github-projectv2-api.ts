@@ -183,6 +183,15 @@ export const fetchProjectItems = async (
                     body
                     number
                     closedAt
+                    comments(last: 1) {
+                      nodes {
+                        body
+                        createdAt
+                        author {
+                          login
+                        }
+                      }
+                    }
                   }
                   ... on DraftIssue {
                     title
@@ -236,6 +245,15 @@ export const fetchProjectItems = async (
                       }
                     }
                     closedAt
+                    comments(last: 1) {
+                      nodes {
+                        body
+                        createdAt
+                        author {
+                          login
+                        }
+                      }
+                    }
                   }
                 }
                 createdAt
@@ -340,5 +358,16 @@ export class ProjectItem {
   }
   public getUrl(): string | undefined {
     return this.node?.content?.url;
+  }
+  public getLastComment(): { body: string; createdAt: string; authorLogin: string } | undefined {
+    const comments = this.node?.content?.comments?.nodes ?? [];
+    if (comments.length === 0) return undefined;
+    
+    const lastComment = comments[0];
+    return {
+      body: lastComment?.body,
+      createdAt: lastComment?.createdAt,
+      authorLogin: lastComment?.author?.login
+    };
   }
 }

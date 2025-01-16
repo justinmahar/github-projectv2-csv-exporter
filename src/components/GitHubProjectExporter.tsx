@@ -108,20 +108,13 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
             .map((item) => {
               const rawTitle = item.getTitle() ?? '';
               const rawStatus = item.getStatus() ?? '';
+              const lastComment = item.getLastComment();
               return {
                 Title: (removeTitleEmojis ? rawTitle.split(emojiRegex()).join('') : rawTitle).trim(),
                 Number: item.getNumber() ?? '',
                 Status: (removeStatusEmojis ? rawStatus.split(emojiRegex()).join('') : rawStatus).trim(),
-                Assignees:
-                  item
-                    .getAssignees()
-                    ?.map((a) => a.name)
-                    .join(', ') ?? '',
-                'Assignee Usernames':
-                  item
-                    .getAssignees()
-                    ?.map((a) => a.login)
-                    .join(', ') ?? '',
+                Assignees: item.getAssignees()?.map((a) => a.name).join(', ') ?? '',
+                'Assignee Usernames': item.getAssignees()?.map((a) => a.login).join(', ') ?? '',
                 Labels: item.getLabels()?.join(', ') ?? '',
                 URL: item.getUrl() ?? '',
                 Milestone: item.getMilestone() ?? '',
@@ -132,6 +125,9 @@ export const GitHubProjectExporter = (props: GitHubProjectExporterProps) => {
                 ClosedAt: item.getClosedAt() ?? '',
                 Type: item.getType() ?? '',
                 State: item.getState() ?? '',
+                'Last Comment': lastComment?.body ?? '',
+                'Last Comment Date': lastComment?.createdAt ?? '',
+                'Last Comment Author': lastComment?.authorLogin ?? '',
               };
             });
           // The en-ZA locale uses YYYY/MM/DD. We then replace all / with -.

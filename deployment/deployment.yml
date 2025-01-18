@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: github-project-csv-exporter
+  namespace: internal-tools
+  labels:
+    app: github-project-csv-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: github-project-csv-exporter
+  template:
+    metadata:
+      labels:
+        app: github-project-csv-exporter
+    spec:
+      containers:
+      - name: github-project-csv-exporter
+        image: ${IMAGE_REGISTRY}/github-project-csv-exporter:${IMAGE_TAG}
+        ports:
+        - containerPort: 6006
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            memory: "2048Mi"

@@ -95,7 +95,7 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                 <Form.Group controlId="fg-token" className="mb-3">
                   <Form.Label className="fs-6 mb-0">GitHub Access Token</Form.Label>
                   <Form.Control
-                    type="text"
+                    type="password"
                     value={accessToken || ''}
                     placeholder="Paste your GitHub token here"
                     onChange={(e) => setAccessToken(e.target.value)}

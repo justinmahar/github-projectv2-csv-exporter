@@ -21,6 +21,7 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
   const [includePullRequests, setIncludePullRequests] = exporterSettings.includePullRequestsState;
   const [includeDraftIssues, setIncludeDraftIssues] = exporterSettings.includeDraftIssuesState;
   const [includeClosedItems, setIncludeClosedItems] = exporterSettings.includeClosedItemsState;
+  const [includeBody, setIncludeBody] = exporterSettings.includeBody;
   const [removeStatusEmojis, setRemoveStatusEmojis] = exporterSettings.removeStatusEmojisState;
   const [removeTitleEmojis, setRemoveTitleEmojis] = exporterSettings.removeTitleEmojisState;
   const [knownColumnsText, setKnownColumnsText] = exporterSettings.knownColumnsTextState;
@@ -182,6 +183,15 @@ export const GitHubExporterSettings = ({ ...props }: GitHubExporterSettingsProps
                     id="closed-issues-checkbox"
                     checked={!!includeClosedItems}
                     onChange={(e) => setIncludeClosedItems(e.target.checked)}
+                    className="user-select-none"
+                  />
+                </Form.Group>
+                <Form.Group controlId="fg-body" className="mb-3">
+                  <Form.Check
+                    label="Include body"
+                    id="body-checkbox"
+                    checked={!!includeBody}
+                    onChange={(e) => setIncludeBody(e.target.checked)}
                     className="user-select-none"
                   />
                 </Form.Group>
